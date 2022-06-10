@@ -1,0 +1,23 @@
+{
+  "name": "typedoc-custom-theme-demo",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "repository": "git@github.com:Gerrit0/typedoc-custom-theme-demo.git",
+  "author": "Gerrit Birkeland <gerrit@gerritbirkeland.com>",
+  "license": "MIT",
+  "keywords": [
+    "typedoc-theme"
+  ],
+  "devDependencies": {
+    "typedoc": "^0.22.9",
+    "typescript": "^4.4.4"
+  },
+  "peerDependencies": {
+    "typedoc": "^0.22.9"
+  },
+  "scripts": {
+    "build": "tsc",
+    "predocs": "tsc",
+    "docs": "typedoc src --plugin dist/index.js"
+  }
+}
