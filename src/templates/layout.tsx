@@ -5,7 +5,7 @@ export const layout: Template<JSX.Element> = (context, page) => {
     const project = page.project;
     const title = model.name === project.name ? project.name : `${model.name} | ${project.name}`;
 
-    const rustdocAssets = context.rustdocAsset('');
+    const logoUrl = context.relativeURL('assets/oxide/logo.svg') ?? '';
 
     return (
         <html class="default">
@@ -17,27 +17,27 @@ export const layout: Template<JSX.Element> = (context, page) => {
                 <meta name="description" content={"Documentation for " + project.name} />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-                <link rel="preload" as="font" type="font/woff2" crossOrigin="anonymous" href={`${rustdocAssets}fonts/SourceSerif4-Regular.ttf.woff2`} />
-                <link rel="preload" as="font" type="font/woff2" crossOrigin="anonymous" href={`${rustdocAssets}fonts/FiraSans-Regular.woff2`} />
-                <link rel="preload" as="font" type="font/woff2" crossOrigin="anonymous" href={`${rustdocAssets}fonts/FiraSans-Medium.woff2`} />
-                <link rel="preload" as="font" type="font/woff2" crossOrigin="anonymous" href={`${rustdocAssets}fonts/SourceCodePro-Regular.ttf.woff2`} />
-                <link rel="preload" as="font" type="font/woff2" crossOrigin="anonymous" href={`${rustdocAssets}fonts/SourceSerif4-Bold.ttf.woff2`} />
-                <link rel="preload" as="font" type="font/woff2" crossOrigin="anonymous" href={`${rustdocAssets}fonts/SourceCodePro-Semibold.ttf.woff2`} />
+                <link rel="preload" as="font" type="font/woff2" crossOrigin="anonymous" href={context.rustdocAsset('fonts/SourceSerif4-Regular.ttf.woff2')} />
+                <link rel="preload" as="font" type="font/woff2" crossOrigin="anonymous" href={context.rustdocAsset('fonts/FiraSans-Regular.woff2')} />
+                <link rel="preload" as="font" type="font/woff2" crossOrigin="anonymous" href={context.rustdocAsset('fonts/FiraSans-Medium.woff2')} />
+                <link rel="preload" as="font" type="font/woff2" crossOrigin="anonymous" href={context.rustdocAsset('fonts/SourceCodePro-Regular.ttf.woff2')} />
+                <link rel="preload" as="font" type="font/woff2" crossOrigin="anonymous" href={context.rustdocAsset('fonts/SourceSerif4-Bold.ttf.woff2')} />
+                <link rel="preload" as="font" type="font/woff2" crossOrigin="anonymous" href={context.rustdocAsset('fonts/SourceCodePro-Semibold.ttf.woff2')} />
 
-                <link rel="stylesheet" type="text/css" href={`${rustdocAssets}css/normalize.min.css`} />
-                <link rel="stylesheet" type="text/css" href={context.relativeURL("assets/oxide/rustdoc.patched.min.css")} id="mainThemeStyle" />
-                <link rel="stylesheet" type="text/css" href={`${rustdocAssets}css/themes/light.min.css`} id="themeStyle" />
-                <link rel="stylesheet" type="text/css" href={`${rustdocAssets}css/themes/dark.min.css`} disabled />
-                <link rel="stylesheet" type="text/css" href={`${rustdocAssets}css/themes/ayu.min.css`} disabled />
+                <link rel="stylesheet" type="text/css" href={context.rustdocAsset('css/normalize.min.css')} />
+                <link rel="stylesheet" type="text/css" href={context.relativeURL("assets/oxide/rustdoc/rustdoc.patched.min.css")} id="mainThemeStyle" />
+                <link rel="stylesheet" type="text/css" href={context.rustdocAsset('css/themes/light.min.css')} id="themeStyle" />
+                <link rel="stylesheet" type="text/css" href={context.rustdocAsset('css/themes/dark.min.css')} disabled />
+                <link rel="stylesheet" type="text/css" href={context.rustdocAsset('css/themes/ayu.min.css')} disabled />
 
-                <script src={`${rustdocAssets}js/storage.min.js`}></script>
-                <script defer src={`${rustdocAssets}js/main.min.js`}></script>
+                <script src={context.rustdocAsset('js/storage.min.js')}></script>
+                <script defer src={context.rustdocAsset('js/main.min.js')}></script>
                 <noscript>
-                    <link rel="stylesheet" href={`${rustdocAssets}css/noscript.min.css`} />
+                    <link rel="stylesheet" href={context.rustdocAsset('css/noscript.min.css')} />
                 </noscript>
 
                 <link rel="stylesheet" href={context.relativeURL("assets/highlight.css")} />
-                <style><JSX.Raw html={extraStylesheets(rustdocAssets)} /></style>
+                <link rel="stylesheet" href={context.relativeURL("assets/oxide/style.css")} />
 
                 {context.options.getValue("customCss") && (
                     <link rel="stylesheet" href={context.relativeURL("assets/custom.css")} />
@@ -57,7 +57,7 @@ export const layout: Template<JSX.Element> = (context, page) => {
                     <button class="sidebar-menu-toggle">&#9776;</button>
                     <a class="sidebar-logo" href={context.relativeURL("index.html")}>
                         <div class="logo-container">
-                            <img class="rust-logo" src={`${rustdocAssets}images/rust-logo.svg`} alt="logo" />
+                            <img class="rust-logo" src={logoUrl} alt="logo" />
                         </div>
                     </a>
                     <h2 class="location"></h2>
@@ -66,7 +66,7 @@ export const layout: Template<JSX.Element> = (context, page) => {
                 <nav class="sidebar">
                     <a class="sidebar-logo" href={context.relativeURL("index.html")}>
                         <div class="logo-container">
-                            <img class="rust-logo" src={`${rustdocAssets}images/rust-logo.svg`} alt="logo" />
+                            <img class="rust-logo" src={logoUrl} alt="logo" />
                         </div>
                     </a>
                     {context.hook("navigation.begin")}
@@ -78,13 +78,13 @@ export const layout: Template<JSX.Element> = (context, page) => {
                     <div class="width-limiter">
                         <div class="sub-container">
                             <a class="sub-logo-container" href={context.relativeURL("index.html")}>
-                                <img class="rust-logo" src={`${rustdocAssets}images/rust-logo.svg`} alt="logo" />
+                                <img class="rust-logo" src={logoUrl} alt="logo" />
                             </a>
                             {/* TODO */}
                             <nav class="sub">
                                 <div class="theme-picker hidden">
                                     <button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes">
-                                        <img width={22} height={22} alt="Pick another theme!" src={`${rustdocAssets}images/brush.svg`} />
+                                        <img width={22} height={22} alt="Pick another theme!" src={context.rustdocAsset('images/brush.svg')} />
                                     </button>
                                     <div id="theme-choices" role="menu"></div>
                                 </div>
@@ -101,7 +101,7 @@ export const layout: Template<JSX.Element> = (context, page) => {
                                         />
                                         <button type="button" id="help-button" title="help">?</button>
                                         <a id="settings-menu" href={context.relativeURL("settings.html")} title="settings">
-                                            <img width={22} height={22} alt="Change settings" src={`${rustdocAssets}images/wheel.svg`} />
+                                            <img width={22} height={22} alt="Change settings" src={context.rustdocAsset('images/wheel.svg')} />
                                         </a>
                                     </div>
                                 </form>
@@ -130,11 +130,3 @@ export const layout: Template<JSX.Element> = (context, page) => {
         </html>
     );
 };
-
-function extraStylesheets(assets: string) {
-    return `
-:target {
-    display: block;
-}
-    `;
-}

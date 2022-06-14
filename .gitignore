@@ -18,6 +18,6 @@ node_modules/
 # Output of 'npm pack'
 *.tgz
 
-# Output of running `yarn typedoc src` on this repo
+# Output of `yarn build`
 docs
-assets
+assets/rustdoc
