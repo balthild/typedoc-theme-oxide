@@ -1,6 +1,6 @@
 {
   "name": "typedoc-theme-oxide",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "A TypeDoc theme looks just like rustdoc.",
   "main": "dist/index.js",
   "repository": "github:balthild/typedoc-theme-oxide",
