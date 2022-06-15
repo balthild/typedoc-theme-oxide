@@ -6,9 +6,6 @@ import {
 export const navigation: Template<JSX.Element> = (context, page) => {
     const { project, model } = page;
 
-    const modules = model.project.getChildrenByKind(ReflectionKind.SomeModule);
-    const projectLinkName = modules.length !== 0 ? "Modules" : "Exports";
-
     return (
         <>
             <h2 class="location">
@@ -20,11 +17,12 @@ export const navigation: Template<JSX.Element> = (context, page) => {
                     <ul>
                         <li class="version">Version {project.packageInfo.version}</li>
                         <li style="margin-top: 0.7rem">
-                            <a href={context.urlTo(model.project)}>{projectLinkName}</a>
+                            <a href={context.urlTo(model.project)}>Exports</a>
                         </li>
                     </ul>
                 </div>
 
+                {renderModulesNavigation(context, model)}
                 {renderItemsNavigation(context, model)}
 
                 {/*
@@ -44,6 +42,42 @@ export const navigation: Template<JSX.Element> = (context, page) => {
             </div>
         </>
     );
+}
+
+function renderModulesNavigation(context: Context, model: Reflection) {
+    const parent = model.parent;
+    if (typeof parent === 'undefined') {
+        return;
+    }
+
+    let modules: Reflection[] = [];
+    if (parent instanceof ContainerReflection) {
+        modules = parent.getChildrenByKind(ReflectionKind.SomeModule);
+    }
+    if (modules.length === 0) {
+        return;
+    }
+
+    return (
+        <section>
+            <div class="block">
+                <ul>
+                    <li><a href={context.urlTo(parent)}>{' . .'}</a></li>
+                    {modules.map((module) => (
+                        <li>
+                            <a href={context.urlTo(module)} class={isCurrentModule(module, model) ? 'current' : ''}>
+                                {module.name}
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </section>
+    )
+}
+
+function isCurrentModule(module: Reflection, current: Reflection) {
+    return module.id === current.id || module.id === current.parent?.id;
 }
 
 function renderItemsNavigation(context: Context, model: Reflection) {
