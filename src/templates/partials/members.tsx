@@ -252,7 +252,7 @@ function transformClassName(children: JSX.Children) {
 }
 
 function isStringNumberLiteral(expr: JSX.Children) {
-    return typeof expr === 'string' && /^\d$/.test(expr[0]);
+    return typeof expr === 'string' && /^(\d|".+"$)/.test(expr);
 }
 
 function isPrimitiveType(expr: JSX.Children) {
