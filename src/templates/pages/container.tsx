@@ -2,8 +2,8 @@ import {
     ContainerReflection, DeclarationReflection, JSX, PageEvent, Reflection, ReflectionKind,
 } from 'typedoc';
 
-import { OxideThemeRenderContext } from '../OxideThemeRenderContext';
-import { itemTypeLinkClass } from './utils';
+import { OxideThemeRenderContext as Context } from '../../OxideThemeRenderContext';
+import { itemTypeLinkClass } from '../utils';
 
 export const container: Template<JSX.Element, PageEvent<ContainerReflection>> = (context, page) => {
     const { model } = page;
@@ -46,21 +46,12 @@ export const container: Template<JSX.Element, PageEvent<ContainerReflection>> = 
     );
 };
 
-function renderFullName(
-    context: OxideThemeRenderContext,
-    model: Reflection | undefined,
-    trailing = true,
-): JSX.Children[] {
+function renderFullName(context: Context, model?: Reflection, trailing = true): JSX.Children[] {
     if (model === undefined || (model.isProject() && !trailing)) {
         return [];
     }
 
-    if (model.kindOf(
-        ReflectionKind.ConstructorSignature |
-        ReflectionKind.CallSignature |
-        ReflectionKind.GetSignature |
-        ReflectionKind.SetSignature
-    )) {
+    if (model.kindOf(ReflectionKind.SomeSignature)) {
         return renderFullName(context, model.parent);
     }
 

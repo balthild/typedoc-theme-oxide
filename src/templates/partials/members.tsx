@@ -9,10 +9,26 @@ import { transformElement } from '../utils';
 
 export const members: Template<JSX.Element, ContainerReflection> = (context, model) => {
     if (model.categories?.length) {
-        return <>{model.categories.map((x) => renderCategory(context, x))}</>;
+        const categories = model.categories.filter((x) => !x.allChildrenHaveOwnDocument());
+        const subitems = model.categories.filter((x) => x.allChildrenHaveOwnDocument());
+
+        return (
+            <>
+                {categories.map((x) => renderCategory(context, x))}
+                {subitems.map((x) => context.subitems(x))}
+            </>
+        );
     }
 
-    return <>{model.groups!.map((x) => renderGroup(context, x))}</>;
+    const groups = model.groups?.filter((x) => !x.allChildrenHaveOwnDocument());
+    const subitems = model.groups?.filter((x) => x.allChildrenHaveOwnDocument());
+
+    return (
+        <>
+            {groups?.map((x) => renderGroup(context, x))}
+            {subitems?.map((x) => context.subitems(x))}
+        </>
+    );
 }
 
 function renderCategory(context: Context, category: ReflectionCategory) {
@@ -29,16 +45,12 @@ function renderCategory(context: Context, category: ReflectionCategory) {
 
             {category.children.map((item) => !item.hasOwnDocument && renderMember(context, item))}
         </>
-    )
+    );
 }
 
 function renderGroup(context: Context, group: ReflectionGroup) {
     if (group.categories) {
         return <>{group.categories.map((x) => renderCategory(context, x))}</>;
-    }
-
-    if (group.allChildrenHaveOwnDocument()) {
-        return;
     }
 
     return (
@@ -50,7 +62,7 @@ function renderGroup(context: Context, group: ReflectionGroup) {
 
             {group.children.map((item) => !item.hasOwnDocument && renderMember(context, item))}
         </>
-    )
+    );
 }
 
 function renderMember(context: Context, member: DeclarationReflection) {
@@ -78,7 +90,7 @@ function renderMember(context: Context, member: DeclarationReflection) {
                 </div>
             </details>
         </div>
-    )
+    );
 }
 
 function renderMemberDetail(context: Context, member: DeclarationReflection) {

@@ -1,10 +1,13 @@
 import {
-    ContainerReflection, DefaultThemeRenderContext, JSX, ProjectReflection, ReflectionCategory,
-    ReflectionGroup,
+    ContainerReflection, DefaultThemeRenderContext as Context, JSX, Reflection, ReflectionCategory,
+    ReflectionGroup, ReflectionKind,
 } from 'typedoc';
 
 export const navigation: Template<JSX.Element> = (context, page) => {
     const { project, model } = page;
+
+    const modules = model.project.getChildrenByKind(ReflectionKind.SomeModule);
+    const projectLinkName = modules.length !== 0 ? "Modules" : "Exports";
 
     return (
         <>
@@ -13,15 +16,16 @@ export const navigation: Template<JSX.Element> = (context, page) => {
             </h2>
 
             <div class="sidebar-elems">
-                {/* TODO: primary navigation */}
                 <div class="block">
                     <ul>
                         <li class="version">Version {project.packageInfo.version}</li>
-                        <li><a id="all-types" href={context.relativeURL('modules.html')}>Exports</a></li>
+                        <li style="margin-top: 0.7rem">
+                            <a href={context.urlTo(model.project)}>{projectLinkName}</a>
+                        </li>
                     </ul>
                 </div>
 
-                {itemsNavigation(context, page)}
+                {renderItemsNavigation(context, model)}
 
                 {/*
                 <div class="others">
@@ -42,34 +46,28 @@ export const navigation: Template<JSX.Element> = (context, page) => {
     );
 }
 
-const itemsNavigation: Template<JSX.Element> = (context, page) => {
-    const { model } = page;
+function renderItemsNavigation(context: Context, model: Reflection) {
+    let blocks: JSX.Element[] = [];
 
-    const blocks: JSX.Element[] = [];
-    if (model instanceof ContainerReflection || model instanceof ProjectReflection) {
+    if (model instanceof ContainerReflection) {
         if (model.categories?.length) {
-            for (const category of model.categories) {
-                blocks.push(renderCategory(context, category));
-            }
+            blocks = model.categories.map((x) => renderCategory(context, x));
         } else if (model.groups?.length) {
-            for (const group of model.groups) {
+            blocks = model.groups.flatMap((group) => {
                 if (group.categories) {
-                    for (const category of group.categories) {
-                        blocks.push(renderCategory(context, category));
-                    }
-                } else {
-                    blocks.push(renderCategory(context, group));
+                    return group.categories.map((x) => renderCategory(context, x));
                 }
-            }
+                return [renderCategory(context, group)];
+            });
         }
     }
 
-    return (
+    return blocks.length > 0 && (
         <section>{blocks}</section>
     );
 }
 
-function renderCategory(context: DefaultThemeRenderContext, category: ReflectionCategory | ReflectionGroup) {
+function renderCategory(context: Context, category: ReflectionCategory | ReflectionGroup) {
     return (
         <div class="block">
             <h3><a href="#">{category.title}</a></h3>
