@@ -1,0 +1,9 @@
+{
+	"entryPoints": ["monaco.d.ts"],
+	"out": "./docs",
+	"plugin": "../dist/index.js",
+	"theme": "oxide",
+	"name": "Monaco Editor API",
+	"readme": "./README.md",
+	"hideGenerator": true
+}
