@@ -1,0 +1,30 @@
+{
+  "excludes": [
+    "**/node_modules",
+    "**/*-lock.json",
+    "./example"
+  ],
+  "imporg": {},
+  "typescript": {
+    "indentWidth": 2,
+    "lineWidth": 120,
+    "semiColons": "always",
+    "quoteStyle": "preferSingle",
+    "jsx.quoteStyle": "preferDouble",
+    "quoteProps": "consistent",
+    "arrowFunction.useParentheses": "force",
+    "functionExpression.spaceBeforeParentheses": true,
+    "jsxOpeningElement.bracketPosition": "sameLine",
+    "jsxSelfClosingElement.bracketPosition": "nextLine"
+  },
+  "malva": {
+    "indentWidth": 4,
+    "printWidth": 120,
+    "quotes": "preferSingle",
+  },
+  "plugins": [
+    "https://plugins.dprint.dev/balthild/imporg-0.1.6.wasm",
+    "https://plugins.dprint.dev/typescript-0.93.0.wasm",
+    "https://plugins.dprint.dev/g-plane/malva-v0.10.1.wasm",
+  ],
+}
