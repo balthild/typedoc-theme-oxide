@@ -26,9 +26,7 @@
     "assets"
   ],
   "dependencies": {
-    "cheerio": "^1.0.0-rc.11",
-    "node-html-parser": "^7.0.1",
-    "prettier": "^3.5.3"
+    "cheerio": "^1.0.0-rc.11"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",
@@ -41,5 +39,5 @@
   "peerDependencies": {
     "typedoc": "^0.28.4"
   },
-  "packageManager": "yarn@1.22.22"
+  "packageManager": "yarn@4.9.1"
 }
