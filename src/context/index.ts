@@ -6,8 +6,6 @@ import { MembersMixin } from './mixins/members.js';
 import { NavigationMixin } from './mixins/navigation.js';
 import { ProjectMixin } from './mixins/project.js';
 
-// export { subitems } from './partials/subitems';
-
 const mixins = [
   LayoutMixin,
 

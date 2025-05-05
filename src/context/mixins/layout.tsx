@@ -7,8 +7,6 @@ type Template = RenderTemplate<PageEvent<Reflection>>;
 export const LayoutMixin = (base: typeof OxideContextBase) =>
   class extends base {
     defaultLayout = (template: Template, page: PageEvent<Reflection>) => {
-      const project = page.project;
-
       return (
         <html class="default">
           {this.__layout_head(page)}
@@ -31,7 +29,7 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
             <div
               id="rustdoc-vars"
               data-root-path={this.relativeURL('index.html')}
-              data-current-crate={project.name}
+              data-current-crate={page.project.name}
               data-themes="light,dark,ayu"
               data-resource-suffix=""
               data-rustdoc-version="1.61.0"
@@ -46,6 +44,15 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
       const project = page.project;
       const title = model.name === project.name ? project.name : `${model.name} | ${project.name}`;
 
+      const fonts = [
+        'fonts/SourceSerif4-Regular.ttf.woff2',
+        'fonts/FiraSans-Regular.woff2',
+        'fonts/FiraSans-Medium.woff2',
+        'fonts/SourceCodePro-Regular.ttf.woff2',
+        'fonts/SourceSerif4-Bold.ttf.woff2',
+        'fonts/SourceCodePro-Semibold.ttf.woff2',
+      ];
+
       return (
         <head>
           <meta charset="utf-8" />
@@ -55,69 +62,31 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
           <meta name="description" content={'Documentation for ' + project.name} />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-          <link
-            rel="preload"
-            as="font"
-            type="font/woff2"
-            crossOrigin="anonymous"
-            href={this.asset('fonts/SourceSerif4-Regular.ttf.woff2')}
-          />
-          <link
-            rel="preload"
-            as="font"
-            type="font/woff2"
-            crossOrigin="anonymous"
-            href={this.asset('fonts/FiraSans-Regular.woff2')}
-          />
-          <link
-            rel="preload"
-            as="font"
-            type="font/woff2"
-            crossOrigin="anonymous"
-            href={this.asset('fonts/FiraSans-Medium.woff2')}
-          />
-          <link
-            rel="preload"
-            as="font"
-            type="font/woff2"
-            crossOrigin="anonymous"
-            href={this.asset('fonts/SourceCodePro-Regular.ttf.woff2')}
-          />
-          <link
-            rel="preload"
-            as="font"
-            type="font/woff2"
-            crossOrigin="anonymous"
-            href={this.asset('fonts/SourceSerif4-Bold.ttf.woff2')}
-          />
-          <link
-            rel="preload"
-            as="font"
-            type="font/woff2"
-            crossOrigin="anonymous"
-            href={this.asset('fonts/SourceCodePro-Semibold.ttf.woff2')}
-          />
+          {fonts.map((font) => (
+            <link
+              rel="preload"
+              as="font"
+              type="font/woff2"
+              crossOrigin="anonymous"
+              href={this.rustdocAsset(font)}
+            />
+          ))}
 
-          <link rel="stylesheet" type="text/css" href={this.asset('css/normalize.min.css')} />
+          <link rel="stylesheet" type="text/css" href={this.rustdocAsset('css/normalize.min.css')} />
           <link
             rel="stylesheet"
             type="text/css"
             href={this.relativeURL('assets/oxide/rustdoc/rustdoc.patched.min.css')}
             id="mainThemeStyle"
           />
-          <link
-            rel="stylesheet"
-            type="text/css"
-            href={this.asset('css/themes/light.min.css')}
-            id="themeStyle"
-          />
-          <link rel="stylesheet" type="text/css" href={this.asset('css/themes/dark.min.css')} disabled />
-          <link rel="stylesheet" type="text/css" href={this.asset('css/themes/ayu.min.css')} disabled />
+          <link rel="stylesheet" type="text/css" href={this.rustdocAsset('css/themes/light.min.css')} id="themeStyle" />
+          <link rel="stylesheet" type="text/css" href={this.rustdocAsset('css/themes/dark.min.css')} disabled />
+          <link rel="stylesheet" type="text/css" href={this.rustdocAsset('css/themes/ayu.min.css')} disabled />
 
-          <script src={this.asset('js/storage.min.js')}></script>
-          <script defer src={this.asset('js/main.min.js')}></script>
+          <script src={this.rustdocAsset('js/storage.min.js')}></script>
+          <script defer src={this.rustdocAsset('js/main.min.js')}></script>
           <noscript>
-            <link rel="stylesheet" href={this.asset('css/noscript.min.css')} />
+            <link rel="stylesheet" href={this.rustdocAsset('css/noscript.min.css')} />
           </noscript>
 
           <link rel="stylesheet" href={this.relativeURL('assets/highlight.css')} />
@@ -193,7 +162,7 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
                 width={22}
                 height={22}
                 alt="Pick another theme!"
-                src={this.asset('images/brush.svg')}
+                src={this.rustdocAsset('images/brush.svg')}
               />
             </button>
             <div id="theme-choices" role="menu"></div>
@@ -202,7 +171,8 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
           <form class="search-form">
             <div class="search-container">
               <span></span>
-              {/* This empty span is a hacky fix for Safari - See #93184 */}
+              {/* This empty span is a hacky fix for Safari - See rust-lang/rust#93184 */}
+
               <input
                 class="search-input"
                 name="search"
@@ -219,7 +189,7 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
                   width={22}
                   height={22}
                   alt="Change settings"
-                  src={this.asset('images/wheel.svg')}
+                  src={this.rustdocAsset('images/wheel.svg')}
                 />
               </a>
             </div>

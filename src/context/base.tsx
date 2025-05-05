@@ -1,16 +1,20 @@
+import slug from 'slug';
 import {
+  DeclarationReflection,
   DefaultTheme,
   DefaultThemeRenderContext,
-  JSX,
+  DocumentReflection,
   Options,
   PageEvent,
+  PageKind,
   Reflection,
   ReflectionCategory,
   ReflectionGroup,
+  ReflectionKind,
   Router,
 } from 'typedoc';
 
-import { itemTypeLinkClass, transformTypography } from './utils.js';
+import { transformTypography } from './utils.js';
 
 export class OxideContextBase extends DefaultThemeRenderContext {
   constructor(router: Router, theme: DefaultTheme, page: PageEvent<Reflection>, options: Options) {
@@ -24,36 +28,30 @@ export class OxideContextBase extends DefaultThemeRenderContext {
     return this.relativeURL('assets/oxide/logo.svg') ?? '';
   }
 
-  protected asset(path: string): string {
+  protected rustdocAsset(path: string): string {
     return `https://cdn.jsdelivr.net/gh/rust-lang/rust@1.61.0/src/librustdoc/html/static/${path}`;
   }
 
-  protected subitems = (model: ReflectionCategory | ReflectionGroup) => {
-    return (
-      <>
-        <h2 id={`category.${model.title}`} class="small-section-header">
-          {model.title}
-          <a href={`#category.${model.title}`} class="anchor"></a>
-        </h2>
+  protected sectionSlug(section: ReflectionGroup | ReflectionCategory) {
+    return slug(`section ${section.title}`);
+  }
 
-        <div class="item-table">
-          {model.children.map((child) => (
-            <div class={`item-row ${this.getReflectionClasses(child)}`}>
-              <div class="item-left module-item">
-                <a
-                  class={itemTypeLinkClass(child)}
-                  href={this.urlTo(child)}
-                  title={child.name}>
-                  {child.name}
-                </a>
-              </div>
-              <div class="item-right docblock-short">
-                <JSX.Raw html={this.markdown(child.comment?.getShortSummary(true))} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </>
-    );
-  };
+  protected itemSlug(item: DeclarationReflection | DocumentReflection) {
+    const kind = ReflectionKind.classString(item.kind).replace('tsd-kind-', '');
+    return slug(`${kind} ${item.name}`);
+  }
+
+  protected itemLink(item: DeclarationReflection | DocumentReflection, nested: boolean) {
+    if (nested || !item.parent) {
+      return this.urlTo(item);
+    }
+
+    const url = this.urlTo(item.parent);
+    const anchor = this.itemSlug(item);
+    if (typeof url !== 'undefined') {
+      return `${url}#${anchor}`;
+    }
+
+    return this.urlTo(item);
+  }
 }

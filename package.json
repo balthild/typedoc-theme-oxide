@@ -2,7 +2,6 @@
   "name": "typedoc-theme-oxide",
   "version": "0.1.7",
   "description": "A TypeDoc theme looks just like rustdoc.",
-  "main": "dist/index.js",
   "repository": "github:balthild/typedoc-theme-oxide",
   "author": "Balthild <ibalthild@gmail.com>",
   "license": "MIT",
@@ -13,31 +12,37 @@
     "typescript"
   ],
   "scripts": {
-    "dev": "watchexec --restart --watch src 'yarn run build && yarn run example'",
-    "serve": "python3 -m http.server --directory ./example/docs",
-    "retrieve": "node scripts/retrieve-assets.js",
+    "download": "node scripts/download-assets.js",
+    "watch": "rm -rf dist && tsc -w",
     "build": "rm -rf dist && tsc",
-    "example": "cd example && typedoc --options ./typedoc.json",
-    "example-deploy": "gh-pages -d ./example/docs",
+    "example:dev": "nodemon --watch dist --exec 'yarn run example:build'",
+    "example:build": "cd example && typedoc --options ./typedoc.json",
+    "example:serve": "http-server ./example/docs",
+    "example:deploy": "gh-pages -d ./example/docs",
     "prepublishOnly": "yarn build"
   },
+  "packageManager": "yarn@4.9.1",
+  "main": "dist/index.js",
   "files": [
     "dist",
     "assets"
   ],
   "dependencies": {
-    "cheerio": "^1.0.0-rc.11"
+    "cheerio": "^1.0.0-rc.11",
+    "slug": "^10.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",
+    "@types/slug": "^5.0.9",
     "clean-css": "^5.3.0",
     "gh-pages": "^6.3.0",
+    "http-server": "^14.1.1",
+    "nodemon": "^3.1.10",
     "typedoc": "^0.28.4",
     "typescript": "^5.8.3",
     "undici": "^7.8.0"
   },
   "peerDependencies": {
     "typedoc": "^0.28.4"
-  },
-  "packageManager": "yarn@4.9.1"
+  }
 }

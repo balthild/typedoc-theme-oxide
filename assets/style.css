@@ -7,7 +7,7 @@
 }
 
 .docblock {
-    --code-background: #f5f5f5;
+    --light-code-background: #f5f5f5;
 }
 
 .docblock pre > button {

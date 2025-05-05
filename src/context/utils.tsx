@@ -1,5 +1,25 @@
 import * as cheerio from 'cheerio';
-import { DeclarationReflection, DocumentReflection, JSX, ReflectionKind } from 'typedoc';
+import {
+  DeclarationReflection,
+  DocumentReflection,
+  JSX,
+  ReflectionCategory,
+  ReflectionGroup,
+  ReflectionKind,
+} from 'typedoc';
+
+export function isNestedTable(section: ReflectionCategory | ReflectionGroup) {
+  return section.children.every(isNestedItem);
+}
+
+export function isNestedItem(item: DeclarationReflection | DocumentReflection) {
+  return item.kindOf([
+    ReflectionKind.ExportContainer,
+    ReflectionKind.Interface,
+    ReflectionKind.Class,
+    ReflectionKind.Enum,
+  ]);
+}
 
 export function itemTypeLinkClass(item: DeclarationReflection | DocumentReflection): string {
   switch (item.kind) {
@@ -63,7 +83,7 @@ export function transformTypography(html: string): string {
 }
 
 export function join(joiner: JSX.Children, list: readonly JSX.Children[]) {
-  const result: JSX.Children = [];
+  const result = [];
 
   for (const item of list) {
     if (result.length > 0) {
@@ -72,29 +92,26 @@ export function join(joiner: JSX.Children, list: readonly JSX.Children[]) {
     result.push(item);
   }
 
-  return <>{result}</>;
+  return result;
 }
 
-/**
- * Insert word break tags ``<wbr>`` into the given string.
- *
- * Breaks the given string at ``_``, ``-`` and capital letters.
- *
- * @param str The string that should be split.
- * @return The original string containing ``<wbr>`` tags where possible.
- */
-export function wbr(str: string): (string | JSX.Element)[] {
-  // TODO: surely there is a better way to do this, but I'm tired.
-  const ret: (string | JSX.Element)[] = [];
-  const re = /[\s\S]*?(?:([^_-][_-])(?=[^_-])|([^A-Z])(?=[A-Z][^A-Z]))/g;
-  let match: RegExpExecArray | null;
-  let i = 0;
-  while ((match = re.exec(str))) {
-    ret.push(match[0]);
-    ret.push(<wbr />);
-    i += match[0].length;
-  }
-  ret.push(str.slice(i));
+export function breakable(str: string) {
+  const sep = /([^0-9A-Za-z]+|[0-9]+|(?<=[a-z])(?=[A-Z]))/;
+  const pieces = str.split(sep).filter((x) => x.length);
+  return join(<wbr />, pieces);
+}
 
-  return ret;
+export function partition<T>(items: T[], predicate: (_: T) => boolean): [T[], T[]] {
+  const satisfied = [];
+  const unsatisfied = [];
+
+  for (const item of items) {
+    if (predicate(item)) {
+      satisfied.push(item);
+    } else {
+      unsatisfied.push(item);
+    }
+  }
+
+  return [satisfied, unsatisfied];
 }

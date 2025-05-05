@@ -22,7 +22,7 @@ export const ContainerMixin = (base: typeof OxideContextBase) =>
 
                 <button id="copy-path" title="Copy item path to clipboard" {...onclick}>
                   <img
-                    src={this.asset('images/clipboard.svg')}
+                    src={this.rustdocAsset('images/clipboard.svg')}
                     width={19}
                     height={18}
                     alt="Copy item path"

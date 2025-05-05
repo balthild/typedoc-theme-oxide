@@ -20,7 +20,7 @@ export const ProjectMixin = (base: typeof OxideContextBase) =>
                 {ReflectionKind.singularString(model.kind)} <a href="#" class="mod">{model.name}</a>
                 <button id="copy-path" title="Copy item path to clipboard" {...onclick}>
                   <img
-                    src={this.asset('images/clipboard.svg')}
+                    src={this.rustdocAsset('images/clipboard.svg')}
                     width={19}
                     height={18}
                     alt="Copy item path"
@@ -45,13 +45,7 @@ export const ProjectMixin = (base: typeof OxideContextBase) =>
             </div>
           </details>
 
-          {model.groups?.map((group) => {
-            if (group.categories) {
-              return group.categories.map((category) => this.subitems(category));
-            }
-
-            return this.subitems(group);
-          })}
+          {this.members(model)}
         </>
       );
     };
