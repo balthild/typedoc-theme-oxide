@@ -1,6 +1,6 @@
 {
   "name": "typedoc-theme-oxide",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "A TypeDoc theme looks just like rustdoc.",
   "repository": "github:balthild/typedoc-theme-oxide",
   "author": "Balthild <ibalthild@gmail.com>",
@@ -13,9 +13,9 @@
   ],
   "scripts": {
     "dev": "rollup -c -w",
-    "download": "node scripts/download-assets.js",
-    "build": "tsc",
+    "build": "rollup -c",
     "clean": "rm -rf dist example/docs",
+    "download": "node scripts/download-assets.js",
     "example:build": "cd example && typedoc --options ./typedoc.json",
     "example:deploy": "gh-pages -d ./example/docs",
     "prepublishOnly": "yarn run clean && yarn run build"

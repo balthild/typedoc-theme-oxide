@@ -51,6 +51,11 @@ module.exports = defineConfig((args) => [
 ]);
 
 function example() {
+  if (!globalThis.httpServer) {
+    globalThis.httpServer = createServer({ root: './example/docs' });
+    globalThis.httpServer.listen(3000);
+  }
+
   return {
     name: 'typedoc-example',
     async writeBundle() {
@@ -70,9 +75,4 @@ function example() {
 
 function cyan(text) {
   return `\x1b[36m${text}\x1b[0m`;
-}
-
-if (!globalThis.httpServer) {
-  globalThis.httpServer = createServer({ root: './example/docs' });
-  globalThis.httpServer.listen(3000);
 }
