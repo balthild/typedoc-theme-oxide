@@ -12,37 +12,50 @@
     "typescript"
   ],
   "scripts": {
+    "dev": "rollup -c -w",
     "download": "node scripts/download-assets.js",
-    "watch": "rm -rf dist && tsc -w",
-    "build": "rm -rf dist && tsc",
-    "example:dev": "nodemon --watch dist --exec 'yarn run example:build'",
+    "build": "tsc",
+    "clean": "rm -rf dist example/docs",
     "example:build": "cd example && typedoc --options ./typedoc.json",
-    "example:serve": "http-server ./example/docs",
     "example:deploy": "gh-pages -d ./example/docs",
-    "prepublishOnly": "yarn build"
+    "prepublishOnly": "yarn run clean && yarn run build"
   },
   "packageManager": "yarn@4.9.1",
   "main": "dist/index.js",
   "files": [
-    "dist",
-    "assets"
+    "dist"
   ],
   "dependencies": {
     "cheerio": "^1.0.0-rc.11",
     "slug": "^10.0.0"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@types/lodash-es": "^4",
+    "@types/lunr": "^2",
     "@types/node": "^22.15.3",
     "@types/slug": "^5.0.9",
     "clean-css": "^5.3.0",
     "gh-pages": "^6.3.0",
     "http-server": "^14.1.1",
-    "nodemon": "^3.1.10",
+    "lit": "^3.3.0",
+    "lodash-es": "^4.17.21",
+    "lunr": "patch:lunr@npm%3A2.3.9#~/.yarn/patches/lunr-npm-2.3.9-fa3aa9c2d6.patch",
+    "postcss": "^8.5.3",
+    "rollup": "^4.40.1",
+    "rollup-plugin-postcss": "^4.0.2",
+    "terser": "^5.39.0",
+    "tslib": "^2.8.1",
     "typedoc": "^0.28.4",
     "typescript": "^5.8.3",
     "undici": "^7.8.0"
   },
   "peerDependencies": {
     "typedoc": "^0.28.4"
+  },
+  "resolutions": {
+    "lunr@npm:^2.3.9": "patch:lunr@npm%3A2.3.9#~/.yarn/patches/lunr-npm-2.3.9-fa3aa9c2d6.patch"
   }
 }

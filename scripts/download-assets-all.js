@@ -2,8 +2,8 @@ const path = require('path');
 const fs = require('fs').promises;
 const { fetch } = require('undici');
 
-const urlPrefix = 'https://cdn.jsdelivr.net/gh/rust-lang/rust@1.61.0/src/librustdoc/html/static';
-const destPrefix = path.join(__dirname, '..', 'assets', 'rustdoc');
+const urlPrefix = 'https://cdn.jsdelivr.net/gh/rust-lang/rust@1.86.0/src/librustdoc/html/static';
+const destPrefix = path.join(__dirname, '..', 'dist', 'assets', 'rustdoc');
 
 async function download(uri, dest) {
   dest = dest ?? uri.split('/').pop();

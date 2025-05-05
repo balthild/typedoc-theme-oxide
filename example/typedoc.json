@@ -3,7 +3,8 @@
 	"out": "./docs",
 	"plugin": ["../dist/index.js"],
 	"theme": "oxide",
-	"name": "Monaco Editor API",
+	"name": "Monaco Editor",
 	"readme": "./README.md",
-	"typePrintWidth": 80
+	"includeVersion": true,
+	"typePrintWidth": 60
 }

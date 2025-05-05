@@ -13,8 +13,8 @@ import {
   TypeParameterReflection,
 } from 'typedoc';
 
-import { OxideContextBase } from '../base.js';
-import { breakable, isNestedTable, itemTypeLinkClass, join, partition, transformElement } from '../utils.js';
+import { OxideContextBase } from '../base';
+import { breakable, isNestedTable, itemTypeLinkClass, join, partition, transformElement } from '../utils';
 
 export const MembersMixin = (base: typeof OxideContextBase) =>
   class extends base {
@@ -38,43 +38,33 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
     };
 
     private __members_category(category: ReflectionCategory) {
-      if (this.page.pageKind === PageKind.Index) {
-        return this.__members_table(category, false);
-      }
-
-      const anchor = this.sectionSlug(category);
-
-      return (
-        <>
-          <h2 id={anchor} class="small-section-header">
-            {category.title}
-            <a href={`#${anchor}`} class="anchor"></a>
-          </h2>
-
-          {category.children.map((item) => this.__members_item(item))}
-        </>
-      );
+      return this.__members_section(category);
     }
 
     private __members_group(group: ReflectionGroup) {
-      if (this.page.pageKind === PageKind.Index) {
-        return this.__members_table(group, false);
-      }
-
       if (group.categories) {
         return group.categories.map((x) => this.__members_category(x));
       }
 
-      const anchor = this.sectionSlug(group);
+      return this.__members_section(group);
+    }
+
+    private __members_section(section: ReflectionCategory | ReflectionGroup) {
+      const anchor = this.sectionSlug(section);
+      const classes = {
+        [ReflectionKind.Enum]: 'variants',
+      } as Record<ReflectionKind, string>;
 
       return (
         <>
-          <h2 id={anchor} class="small-section-header">
-            {group.title}
-            <a href={`#${anchor}`} class="anchor"></a>
+          <h2 id={anchor} class="section-header">
+            {section.title}
+            <a href={`#${anchor}`} class="anchor">§</a>
           </h2>
 
-          {group.children.map((item) => this.__members_item(item))}
+          <div class={classes[this.model.kind]}>
+            {section.children.map((item) => this.__members_item(item))}
+          </div>
         </>
       );
     }
@@ -84,28 +74,29 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
 
       return (
         <>
-          <h2 id={anchor} class="small-section-header">
+          <h2 id={anchor} class="section-header">
             {section.title}
-            <a href={`#${anchor}`} class="anchor"></a>
+            <a href={`#${anchor}`} class="anchor">§</a>
           </h2>
 
-          <div class="item-table">
+          <dl class="item-table">
             {section.children.map((item) => (
-              <div class={`item-row ${this.getReflectionClasses(item)}`}>
-                <div class="item-left module-item">
+              <>
+                <dt>
                   <a
                     class={itemTypeLinkClass(item)}
                     href={this.itemLink(item, nested)}
                     title={item.name}>
                     {item.name}
                   </a>
-                </div>
-                <div class="item-right docblock-short">
+                </dt>
+
+                <dd>
                   <JSX.Raw html={this.markdown(item.comment?.getShortSummary(true))} />
-                </div>
-              </div>
+                </dd>
+              </>
             ))}
-          </div>
+          </dl>
         </>
       );
     };
@@ -127,21 +118,40 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
       const anchor = this.itemSlug(decl);
       const source = this.__members_source(decl);
 
+      if (decl.kindOf(ReflectionKind.EnumMember)) {
+        return this.__members_variant(decl);
+      }
+
       return (
-        <div>
-          <details class="rustdoc-toggle implementors-toggle" open>
-            <summary>
-              <section id={anchor} class={`impl ${source ? 'has-srclink' : ''}`}>
-                {source}
-                <a href={`#${anchor}`} class="anchor"></a>
-                <h3 class="code-header">{decl.name}</h3>
-              </section>
-            </summary>
-            <div class="impl-items">
-              {this.__members_detail(decl)}
-            </div>
-          </details>
-        </div>
+        <details class="toggle implementors-toggle" open>
+          <summary>
+            <section id={anchor} class="impl">
+              {source}
+              <a href={`#${anchor}`} class="anchor">§</a>
+              <h3 class="code-header">{decl.name}</h3>
+            </section>
+          </summary>
+          <div class="impl-items">
+            {this.__members_detail(decl)}
+          </div>
+        </details>
+      );
+    }
+
+    private __members_variant(decl: DeclarationReflection) {
+      const anchor = this.itemSlug(decl);
+
+      return (
+        <>
+          <section id={anchor} class="variant">
+            <a href={`#${anchor}`} class="anchor">§</a>
+            <h3 class="code-header">{decl.name} = {transformClassName(this.type(decl.type))}</h3>
+          </section>
+          <div class="docblock">
+            {this.commentSummary(decl)}
+            {this.commentTags(decl)}
+          </div>
+        </>
       );
     }
 
@@ -159,7 +169,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
         // what is this?
         return this.__members_detailReference(decl);
       } else {
-        // type aliases, variables, fields and enum members
+        // type aliases, variables, fields
         return this.__members_detailOther(decl);
       }
     }
@@ -169,11 +179,11 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
       const source = this.__members_source(decl);
 
       return (
-        <details class="rustdoc-toggle method-toggle" open>
+        <details class="toggle method-toggle" open>
           <summary>
-            <section id={anchor} class={`method ${source ? 'has-srclink' : ''}`}>
+            <section id={anchor} class="method">
               {source}
-              <a href={`#${anchor}`} class="anchor"></a>
+              <a href={`#${anchor}`} class="anchor">§</a>
 
               <h4 class="code-header">
                 {transformClassName(this.memberSignatureTitle(decl))}
@@ -220,11 +230,11 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
       }
 
       return (
-        <details class="rustdoc-toggle method-toggle" open>
+        <details class="toggle method-toggle" open>
           <summary>
-            <section id={anchor} class={`method ${source ? 'has-srclink' : ''}`}>
+            <section id={anchor} class="method">
               {source}
-              <a href={`#${anchor}`} class="anchor"></a>
+              <a href={`#${anchor}`} class="anchor">§</a>
 
               <h4 class="code-header">
                 <span class="struct">{prefix}</span>
@@ -242,7 +252,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
                   <a href={this.urlTo(decl)}>{decl.name}</a>,
                 ]}
 
-                {value && !decl.kindOf(ReflectionKind.EnumMember) && ` = ${value}`}
+                {value && ` = ${value}`}
               </h4>
             </section>
           </summary>
@@ -263,7 +273,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
 
       return (
         <span class="rightside">
-          <a class="srclink" href={url}>source</a>
+          <a class="src" href={url}>source</a>
         </span>
       );
     }
@@ -303,24 +313,29 @@ function transformClassName(children: JSX.Children) {
       ...element.props,
     };
 
-    if (element.tag !== 'a' && props.class) {
-      const classes = props.class.trim().split(/\s+/);
-      if (classes.includes('tsd-signature-type')) {
-        const firstChild = element.children[0];
-        if (isStringNumberLiteral(firstChild)) {
-          classes.push('macro');
-        } else if (isPrimitiveType(firstChild)) {
-          classes.push('primitive');
-        } else if (props['data-tsd-kind'] === 'Type Parameter') {
-          classes.push('trait');
-        } else {
-          classes.push('foreigntype');
-        }
-      } else if (classes.includes('tsd-signature-keyword')) {
-        classes.push('struct');
+    const classes = props.class?.trim().split(/\s+/) ?? [];
+    if (classes.includes('tsd-signature-type')) {
+      const firstChild = element.children[0];
+      if (isStringNumberLiteral(firstChild)) {
+        classes.push('macro');
+      } else if (isPrimitiveType(firstChild)) {
+        classes.push('primitive');
+      } else if (props['data-tsd-kind'] === 'Type Parameter') {
+        classes.push('trait');
+      } else {
+        classes.push('associatedtype');
       }
-      props.class = classes.join(' ');
     }
+    if (classes.includes('tsd-signature-keyword')) {
+      classes.push('primitive');
+    }
+    if (classes.includes('tsd-kind-type-parameter')) {
+      classes.push('trait');
+    }
+    if (classes.includes('tsd-kind-call-signature')) {
+      classes.push('method');
+    }
+    props.class = classes.join(' ');
 
     return {
       ...element,

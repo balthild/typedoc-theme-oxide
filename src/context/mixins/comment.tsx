@@ -1,6 +1,6 @@
 import { JSX, Reflection, ReflectionKind } from 'typedoc';
 
-import { OxideContextBase } from '../base.js';
+import { OxideContextBase } from '../base';
 
 export const CommentMixin = (base: typeof OxideContextBase) =>
   class extends base {

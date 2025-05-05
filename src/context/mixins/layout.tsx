@@ -1,6 +1,6 @@
 import { JSX, PageEvent, Reflection, RenderTemplate } from 'typedoc';
 
-import { OxideContextBase } from '../base.js';
+import { OxideContextBase } from '../base';
 
 type Template = RenderTemplate<PageEvent<Reflection>>;
 
@@ -8,7 +8,7 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
   class extends base {
     defaultLayout = (template: Template, page: PageEvent<Reflection>) => {
       return (
-        <html class="default">
+        <html lang={this.options.getValue('lang')} data-base={this.relativeURL('./')}>
           {this.__layout_head(page)}
 
           <body class="rustdoc">
@@ -20,20 +20,11 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
 
             {this.hook('body.begin', this)}
 
-            {this.__layout_topbar()}
+            {this.__layout_topbar(page)}
             {this.__layout_sidebar(page)}
             {this.__layout_main(template, page)}
 
             {this.hook('body.end', this)}
-
-            <div
-              id="rustdoc-vars"
-              data-root-path={this.relativeURL('index.html')}
-              data-current-crate={page.project.name}
-              data-themes="light,dark,ayu"
-              data-resource-suffix=""
-              data-rustdoc-version="1.61.0"
-            />
           </body>
         </html>
       );
@@ -76,21 +67,34 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
           <link
             rel="stylesheet"
             type="text/css"
-            href={this.relativeURL('assets/oxide/rustdoc/rustdoc.patched.min.css')}
-            id="mainThemeStyle"
+            href={this.relativeURL('assets/oxide/rustdoc/rustdoc.css')}
           />
-          <link rel="stylesheet" type="text/css" href={this.rustdocAsset('css/themes/light.min.css')} id="themeStyle" />
-          <link rel="stylesheet" type="text/css" href={this.rustdocAsset('css/themes/dark.min.css')} disabled />
-          <link rel="stylesheet" type="text/css" href={this.rustdocAsset('css/themes/ayu.min.css')} disabled />
+
+          <meta
+            name="rustdoc-vars"
+            data-root-path={this.relativeURL('')}
+            data-static-root-path={this.relativeURL('assets/oxide/rustdoc/')}
+            data-current-crate={page.project.name}
+            data-themes=""
+            data-resource-suffix=""
+            data-rustdoc-version="1.86.0"
+            data-channel="1.86.0"
+            data-search-js="search.js"
+            data-settings-js="settings.js"
+          />
 
           <script src={this.rustdocAsset('js/storage.min.js')}></script>
-          <script defer src={this.rustdocAsset('js/main.min.js')}></script>
+          <script defer src={this.relativeURL('assets/oxide/rustdoc/main.js')}></script>
           <noscript>
             <link rel="stylesheet" href={this.rustdocAsset('css/noscript.min.css')} />
           </noscript>
 
           <link rel="stylesheet" href={this.relativeURL('assets/highlight.css')} />
-          <link rel="stylesheet" href={this.relativeURL('assets/oxide/style.css')} />
+          <link rel="stylesheet" href={this.relativeURL('assets/oxide/index.css')} />
+          <script src={this.relativeURL('assets/hierarchy.js')}></script>
+          <script src={this.relativeURL('assets/search.js')}></script>
+          <script src={this.relativeURL('assets/main.js')}></script>
+          <script src={this.relativeURL('assets/oxide/index.js')}></script>
 
           {this.options.getValue('customCss') && <link rel="stylesheet" href={this.relativeURL('assets/custom.css')} />}
           {this.hook('head.end', this)}
@@ -98,32 +102,38 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
       );
     }
 
-    private __layout_topbar() {
+    private __layout_topbar(page: PageEvent<Reflection>) {
+      const { project } = page;
+
       return (
         <nav class="mobile-topbar">
-          <button class="sidebar-menu-toggle">&#9776;</button>
-          <a class="sidebar-logo" href={this.relativeURL('index.html')}>
-            <div class="logo-container">
-              <img class="rust-logo" src={this.logo()} alt="logo" />
-            </div>
-          </a>
-          <h2 class="location"></h2>
+          <button class="sidebar-menu-toggle" title="show sidebar"></button>
+          <h2 class="location">
+            <a href="#">{project.name}</a>
+          </h2>
         </nav>
       );
     }
 
     private __layout_sidebar(page: PageEvent<Reflection>) {
+      const { project } = page;
+
       return (
-        <nav class="sidebar">
-          <a class="sidebar-logo" href={this.relativeURL('index.html')}>
-            <div class="logo-container">
-              <img class="rust-logo" src={this.logo()} alt="logo" />
+        <>
+          <nav class="sidebar">
+            <div class="sidebar-crate">
+              <h2>
+                <a href={this.relativeURL('index.html')}>{project.name}</a>
+                <span class="version">{project.packageVersion}</span>
+              </h2>
             </div>
-          </a>
-          {this.hook('sidebar.begin', this)}
-          {this.navigation(page)}
-          {this.hook('sidebar.end', this)}
-        </nav>
+
+            {this.hook('sidebar.begin', this)}
+            {this.navigation(page)}
+            {this.hook('sidebar.end', this)}
+          </nav>
+          <div class="sidebar-resizer" />
+        </>
       );
     }
 
@@ -131,13 +141,7 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
       return (
         <main>
           <div class="width-limiter">
-            <div class="sub-container">
-              <a class="sub-logo-container" href={this.relativeURL('index.html')}>
-                <img class="rust-logo" src={this.logo()} alt="logo" />
-              </a>
-
-              {this.__layout_settings()}
-            </div>
+            <rustdoc-search />
 
             <section id="main-content" class="content">
               {this.hook('content.begin', this)}
@@ -145,56 +149,11 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
               {this.hook('content.end', this)}
             </section>
 
-            <section id="search" class="content hidden"></section>
+            <section id="alternative-display" class="content hidden">
+              <oxide-search-results id="search" />
+            </section>
           </div>
         </main>
-      );
-    }
-
-    private __layout_settings() {
-      // TODO
-
-      return (
-        <nav class="sub">
-          <div class="theme-picker hidden">
-            <button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes">
-              <img
-                width={22}
-                height={22}
-                alt="Pick another theme!"
-                src={this.rustdocAsset('images/brush.svg')}
-              />
-            </button>
-            <div id="theme-choices" role="menu"></div>
-          </div>
-
-          <form class="search-form">
-            <div class="search-container">
-              <span></span>
-              {/* This empty span is a hacky fix for Safari - See rust-lang/rust#93184 */}
-
-              <input
-                class="search-input"
-                name="search"
-                autocomplete="off"
-                spellcheck={false}
-                placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
-                type="search"
-              />
-
-              <button type="button" id="help-button" title="help">?</button>
-
-              <a id="settings-menu" href={this.relativeURL('settings.html')} title="settings">
-                <img
-                  width={22}
-                  height={22}
-                  alt="Change settings"
-                  src={this.rustdocAsset('images/wheel.svg')}
-                />
-              </a>
-            </div>
-          </form>
-        </nav>
       );
     }
   };

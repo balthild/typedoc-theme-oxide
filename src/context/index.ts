@@ -1,10 +1,10 @@
-import { OxideContextBase } from './base.js';
-import { CommentMixin } from './mixins/comment.js';
-import { ContainerMixin } from './mixins/container.js';
-import { LayoutMixin } from './mixins/layout.js';
-import { MembersMixin } from './mixins/members.js';
-import { NavigationMixin } from './mixins/navigation.js';
-import { ProjectMixin } from './mixins/project.js';
+import { OxideContextBase } from './base';
+import { CommentMixin } from './mixins/comment';
+import { ContainerMixin } from './mixins/container';
+import { LayoutMixin } from './mixins/layout';
+import { MembersMixin } from './mixins/members';
+import { NavigationMixin } from './mixins/navigation';
+import { ProjectMixin } from './mixins/project';
 
 const mixins = [
   LayoutMixin,

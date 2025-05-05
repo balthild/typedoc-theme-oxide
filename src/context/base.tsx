@@ -6,7 +6,6 @@ import {
   DocumentReflection,
   Options,
   PageEvent,
-  PageKind,
   Reflection,
   ReflectionCategory,
   ReflectionGroup,
@@ -14,7 +13,7 @@ import {
   Router,
 } from 'typedoc';
 
-import { transformTypography } from './utils.js';
+import { transformTypography } from './utils';
 
 export class OxideContextBase extends DefaultThemeRenderContext {
   constructor(router: Router, theme: DefaultTheme, page: PageEvent<Reflection>, options: Options) {
@@ -29,7 +28,7 @@ export class OxideContextBase extends DefaultThemeRenderContext {
   }
 
   protected rustdocAsset(path: string): string {
-    return `https://cdn.jsdelivr.net/gh/rust-lang/rust@1.61.0/src/librustdoc/html/static/${path}`;
+    return `https://cdn.jsdelivr.net/gh/rust-lang/rust@1.86.0/src/librustdoc/html/static/${path}`;
   }
 
   protected sectionSlug(section: ReflectionGroup | ReflectionCategory) {

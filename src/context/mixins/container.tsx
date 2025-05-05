@@ -1,17 +1,12 @@
 import { ContainerReflection, DeclarationReflection, JSX, PageEvent, Reflection, ReflectionKind } from 'typedoc';
 
-import { OxideContextBase } from '../base.js';
-import { itemTypeLinkClass } from '../utils.js';
+import { OxideContextBase } from '../base';
+import { itemTypeLinkClass } from '../utils';
 
 export const ContainerMixin = (base: typeof OxideContextBase) =>
   class extends base {
     reflectionTemplate = (page: PageEvent<ContainerReflection>) => {
       const { model } = page;
-
-      // Workaround for types.d.ts not working
-      const onclick = {
-        onclick: 'copy_path(this)',
-      };
 
       return (
         <>
@@ -19,15 +14,7 @@ export const ContainerMixin = (base: typeof OxideContextBase) =>
             <h1 class="fqn">
               <span class="in-band">
                 {ReflectionKind.singularString(model.kind)} {this.__container_breadcrumb(model)}
-
-                <button id="copy-path" title="Copy item path to clipboard" {...onclick}>
-                  <img
-                    src={this.rustdocAsset('images/clipboard.svg')}
-                    width={19}
-                    height={18}
-                    alt="Copy item path"
-                  />
-                </button>
+                <button id="copy-path" title="Copy item path to clipboard">Copy item path</button>
               </span>
             </h1>
 
@@ -39,7 +26,7 @@ export const ContainerMixin = (base: typeof OxideContextBase) =>
           </div>
 
           {model.hasComment() && (
-            <details class="rustdoc-toggle top-doc" open>
+            <details class="toggle top-doc" open>
               <summary class="hideme">
                 <span>Expand description</span>
               </summary>

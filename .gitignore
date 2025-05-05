@@ -12,6 +12,7 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 # Compiled output
 dist
 docs
+assets/dist
 assets/rustdoc
 
 # Dependency directories

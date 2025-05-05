@@ -1,0 +1,43 @@
+:target {
+  display: block;
+}
+
+.tsd-anchor-icon {
+  display: none;
+}
+
+.docblock {
+  --code-background: var(--code-block-background-color);
+}
+
+.docblock pre > button {
+  display: none;
+}
+
+oxide-search-results .search-results.active {
+  display: table;
+  width: 100%;
+}
+
+oxide-search-results .search-results.active > a {
+  display: table-row;
+}
+
+oxide-search-results .search-results.active .result-name {
+  display: table-cell;
+  border-bottom: 1px solid var(--search-result-border-color);
+}
+
+oxide-search-results .search-results.active .result-name .typename {
+  white-space: nowrap;
+  padding-right: 1.5rem;
+}
+
+oxide-search-results .search-results.active .result-name .path span {
+  display: inline-block;
+}
+
+oxide-search-results .search-results.active .result-name:first-child {
+  width: 1px;
+  vertical-align: middle;
+}

@@ -1,42 +1,26 @@
 import { JSX, PageEvent, ProjectReflection, ReflectionKind } from 'typedoc';
 
-import { OxideContextBase } from '../base.js';
+import { OxideContextBase } from '../base';
 
 export const ProjectMixin = (base: typeof OxideContextBase) =>
   class extends base {
     indexTemplate = (page: PageEvent<ProjectReflection>) => {
-      const { model } = page;
-
-      // Workaround for types.d.ts not working
-      const onclick = {
-        onclick: 'copy_path(this)',
-      };
+      const { model, project } = page;
 
       return (
         <>
           <div class="main-heading">
-            <h1 class="fqn">
-              <span class="in-band">
-                {ReflectionKind.singularString(model.kind)} <a href="#" class="mod">{model.name}</a>
-                <button id="copy-path" title="Copy item path to clipboard" {...onclick}>
-                  <img
-                    src={this.rustdocAsset('images/clipboard.svg')}
-                    width={19}
-                    height={18}
-                    alt="Copy item path"
-                  />
-                </button>
-              </span>
+            <h1>
+              {ReflectionKind.singularString(model.kind)} <span>{project.name}</span>
+              <button id="copy-path" title="Copy item path to clipboard">Copy item path</button>
             </h1>
-
-            <span class="out-of-band">
-              <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class="inner">−</span>]
-              </a>
+            <rustdoc-toolbar />
+            <span class="sub-heading">
+              <a class="src" href="../src/native_dialog/lib.rs.html#1-13">Source</a>
             </span>
           </div>
 
-          <details class="rustdoc-toggle top-doc" open>
+          <details class="toggle top-doc" open>
             <summary class="hideme">
               <span>Expand description</span>
             </summary>

@@ -10,8 +10,8 @@ import {
   ReflectionKind,
 } from 'typedoc';
 
-import { OxideContextBase } from '../base.js';
-import { isNestedTable, partition } from '../utils.js';
+import { OxideContextBase } from '../base';
+import { isNestedTable, partition } from '../utils';
 
 export const NavigationMixin = (base: typeof OxideContextBase) =>
   class extends base {
@@ -20,19 +20,12 @@ export const NavigationMixin = (base: typeof OxideContextBase) =>
 
       return (
         <>
-          <h2 class="location">
-            <a href="#">{project.name}</a>
-          </h2>
-
           <div class="sidebar-elems">
-            <div class="block">
-              <ul>
-                <li class="version">Version {project.packageVersion}</li>
-                <li style="margin-top: 0.7rem">
-                  <a href={this.urlTo(model.project)}>Exports</a>
-                </li>
-              </ul>
-            </div>
+            <ul class="block">
+              <li>
+                <a href={this.urlTo(model.project)}>Exports</a>
+              </li>
+            </ul>
 
             {this.__navigation_modules(model)}
             {this.__navigation_sections(model)}
@@ -53,23 +46,21 @@ export const NavigationMixin = (base: typeof OxideContextBase) =>
 
       return (
         <section>
-          <div class="block">
-            <ul>
-              <li>
-                <a href={this.urlTo(parent)}>{' . .'}</a>
-              </li>
+          <ul class="block">
+            <li>
+              <a href={this.urlTo(parent)}>{' . .'}</a>
+            </li>
 
-              {modules.map((module) => (
-                <li>
-                  <a
-                    href={this.urlTo(module)}
-                    class={isCurrentModule(module, model) ? 'current' : ''}>
-                    {module.name}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+            {modules.map((module) => (
+              <li>
+                <a
+                  href={this.urlTo(module)}
+                  class={isCurrentModule(module, model) ? 'current' : ''}>
+                  {module.name}
+                </a>
+              </li>
+            ))}
+          </ul>
         </section>
       );
     }
@@ -111,14 +102,14 @@ export const NavigationMixin = (base: typeof OxideContextBase) =>
       const anchor = this.sectionSlug(table);
 
       return (
-        <div class="block">
+        <>
           <h3>
             <a href={`#${anchor}`}>{table.title}</a>
           </h3>
-          <ul>
+          <ul class="block">
             {table.children.map((x) => this.__navigation_item(x, nested))}
           </ul>
-        </div>
+        </>
       );
     }
 

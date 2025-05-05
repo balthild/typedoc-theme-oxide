@@ -64,6 +64,10 @@ export function transformElement(
 export function transformTypography(html: string): string {
   const $ = cheerio.load(html, null, false);
 
+  $('h1').each((_, el) => {
+    $(el).wrapInner('<h2></h2>').children(':first-child').unwrap();
+  });
+
   $('a').find('>h1, >h2, >h3, >h4, >h5, >h6').each((_, el) => {
     const $heading = $(el);
     const $outerAnchor = $heading.parent();
