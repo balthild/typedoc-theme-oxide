@@ -14,6 +14,14 @@
   display: none;
 }
 
+rustdoc-toolbar #help-button .shortcuts {
+  width: 100%;
+}
+
+rustdoc-toolbar #help-button .info {
+  display: none;
+}
+
 oxide-search-results .search-results.active {
   display: table;
   width: 100%;

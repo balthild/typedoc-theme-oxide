@@ -18,7 +18,7 @@
     "download": "node scripts/download-assets.js",
     "example:build": "cd example && typedoc --options ./typedoc.json",
     "example:deploy": "gh-pages -d ./example/docs",
-    "prepublishOnly": "yarn run clean && yarn run build"
+    "release": "release-it"
   },
   "packageManager": "yarn@4.9.1",
   "type": "module",
@@ -43,6 +43,7 @@
     "lit": "^3.3.0",
     "lodash-es": "^4.17.21",
     "postcss": "^8.5.3",
+    "release-it": "^19.0.2",
     "rollup": "^4.40.1",
     "rollup-plugin-postcss": "^4.0.2",
     "terser": "^5.39.0",
