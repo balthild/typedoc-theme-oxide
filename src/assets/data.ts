@@ -4,9 +4,9 @@ declare namespace globalThis {
   const translations: Record<string, string>;
 }
 
-export async function loadDeflateData<T>(base64: string) {
-  const binary = atob(base64);
-  const blob = new Blob([Uint8Array.from(binary, (c) => c.charCodeAt(0))]);
+export async function loadDeflateData<T = any>(url: string) {
+  const response = await fetch(url);
+  const blob = await response.blob();
   const stream = blob.stream().pipeThrough(new DecompressionStream('deflate'));
   return await new Response(stream).json() as T;
 }
@@ -14,11 +14,10 @@ export async function loadDeflateData<T>(base64: string) {
 export async function loadSearchIndex() {
   const index = createSearchDocument();
 
-  const base = `${document.documentElement.dataset.base}assets/oxide/search`;
-  const parts = await (await fetch(`${base}/index.json`)).json();
-  for (const part of parts) {
-    const data = await (await fetch(`${base}/${part}`)).json();
-    index.import(part, data);
+  const base = `${document.documentElement.dataset.base}assets/oxide`;
+  const parts = await loadDeflateData(`${base}/search-index.defalte`);
+  for (const [key, data] of Object.entries(parts)) {
+    index.import(key, data as any);
   }
 
   return index;

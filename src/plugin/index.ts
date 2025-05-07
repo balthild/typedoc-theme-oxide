@@ -1,5 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { deflate } from 'zlib';
 
 import { Application, Reflection, RendererEvent } from 'typedoc';
 
@@ -44,22 +45,27 @@ export function load(app: Application) {
             comment: renderTextComment(item),
             kind: item.kind,
             parent: item.parent?.isProject() ? '' : item.parent?.getFullName() ?? '',
-            url: itemLink((item) => (app.renderer.router?.getFullUrl(item))!, item, false),
+            url: itemLink((item) => app.renderer.router!.getFullUrl(item), item, false),
           });
         } catch {}
       });
 
-    const keys: string[] = [];
-    const dest = path.join(event.outputDirectory, 'assets', 'oxide', 'search');
-
+    const parts: Record<string, any> = {};
     await document.export(async function (key, data) {
-      await fs.mkdir(dest, { recursive: true });
-      await fs.writeFile(path.join(dest, key), data, 'utf-8');
       app.logger.info(`Search index part: ${key}`);
-      keys.push(key);
+      parts[key] = JSON.parse(data);
     });
 
-    fs.writeFile(path.join(dest, 'index.json'), JSON.stringify(keys));
+    const buffer = await new Promise<Buffer>((resolve, reject) => {
+      deflate(Buffer.from(JSON.stringify(parts)), (err, data) => {
+        if (err) reject(err);
+        else resolve(data);
+      });
+    });
+
+    const dest = path.join(event.outputDirectory, 'assets', 'oxide');
+    await fs.mkdir(dest, { recursive: true });
+    await fs.writeFile(path.join(dest, 'search-index.defalte'), buffer);
   });
 
   app.renderer.postRenderAsyncJobs.push(async (event: RendererEvent) => {
