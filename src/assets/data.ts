@@ -1,39 +1,7 @@
+import { createSearchDocument } from '../lib';
+
 declare namespace globalThis {
-  const searchData: string;
-  const hierarchyData: string;
   const translations: Record<string, string>;
-}
-
-export interface TypeDocData {
-  search: SearchData;
-  hierarchy: HierarchyData;
-}
-
-export interface SearchData {
-  rows: SearchItem[];
-  index: any;
-}
-
-export interface SearchItem {
-  kind: number;
-  name: string;
-  url: string;
-  classes: string;
-  parent?: string;
-}
-
-export interface HierarchyData {
-  roots: number[];
-  reflections: Record<number, HierarchyItem>;
-}
-
-export interface HierarchyItem {
-  name: string;
-  kind: number;
-  url: string;
-  children?: number[];
-  uniqueNameParents?: number[];
-  class: string;
 }
 
 export async function loadDeflateData<T>(base64: string) {
@@ -43,13 +11,17 @@ export async function loadDeflateData<T>(base64: string) {
   return await new Response(stream).json() as T;
 }
 
-export async function loadData() {
-  let [search, hierarchy] = await Promise.all([
-    await loadDeflateData<SearchData>(globalThis.searchData),
-    await loadDeflateData<HierarchyData>(globalThis.hierarchyData),
-  ]);
+export async function loadSearchIndex() {
+  const index = createSearchDocument();
 
-  return { search, hierarchy } as TypeDocData;
+  const base = `${document.documentElement.dataset.base}assets/oxide/search`;
+  const parts = await (await fetch(`${base}/index.json`)).json();
+  for (const part of parts) {
+    const data = await (await fetch(`${base}/${part}`)).json();
+    index.import(part, data);
+  }
+
+  return index;
 }
 
 export function getReflectionKindName(kind: number) {

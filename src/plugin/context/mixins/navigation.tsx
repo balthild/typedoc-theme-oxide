@@ -1,7 +1,5 @@
 import {
   ContainerReflection,
-  DeclarationReflection,
-  DocumentReflection,
   JSX,
   PageEvent,
   Reflection,
@@ -11,7 +9,7 @@ import {
 } from 'typedoc';
 
 import { OxideContextBase } from '../base';
-import { isNestedTable, partition } from '../utils';
+import { isNestedTable, partition, ReflectionWithLink } from '../utils';
 
 export const NavigationMixin = (base: typeof OxideContextBase) =>
   class extends base {
@@ -113,10 +111,10 @@ export const NavigationMixin = (base: typeof OxideContextBase) =>
       );
     }
 
-    private __navigation_item(item: DeclarationReflection | DocumentReflection, nested: boolean) {
+    private __navigation_item(item: ReflectionWithLink, forceNested: boolean) {
       return (
         <li class={this.getReflectionClasses(item)}>
-          <a href={this.itemLink(item, nested)}>{item.name}</a>
+          <a href={this.itemLink(item, forceNested)}>{item.name}</a>
         </li>
       );
     }

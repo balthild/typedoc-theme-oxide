@@ -1,30 +1,31 @@
-const resolve = require('@rollup/plugin-node-resolve');
-const typescript = require('@rollup/plugin-typescript');
-const commonjs = require('@rollup/plugin-commonjs');
-const postcss = require('rollup-plugin-postcss');
-const { createServer } = require('http-server');
-const { spawn } = require('child_process');
-const { defineConfig } = require('rollup');
+import resolve from '@rollup/plugin-node-resolve';
+import typescript from '@rollup/plugin-typescript';
+import postcss from 'rollup-plugin-postcss';
+import { createServer } from 'http-server';
+import { defineConfig } from 'rollup';
+import { spawn } from 'child_process';
+import * as fs from 'fs/promises';
 
-module.exports = defineConfig((args) => [
+export default defineConfig([
   // The plugin itself
   {
     plugins: [
       typescript(),
       resolve({ extensions: ['.ts', '.tsx', '.json', '.node'] }),
-      args.watch && example(),
+      typedocExampleBuild(),
     ],
-    input: 'src/index.ts',
+    input: 'src/plugin/index.ts',
     external: /(node_modules)/,
     watch: {
       clearScreen: false,
     },
     output: {
-      dir: 'dist',
-      format: 'cjs',
+      dir: 'dist/plugin',
+      format: 'esm',
       sourcemap: true,
       interop: 'auto',
       preserveModules: true,
+      preserveModulesRoot: 'src/plugin',
     },
   },
 
@@ -33,16 +34,16 @@ module.exports = defineConfig((args) => [
     plugins: [
       typescript(),
       resolve({ extensions: ['.ts', '.tsx', '.json', '.node'] }),
-      commonjs({ include: ['node_modules/lunr/lunr.js'] }),
-      postcss({ extract: true }),
-      args.watch && example(),
+      postcss({ extract: true, sourceMap: true }),
+      typedocExampleCopyAssets(),
     ],
     input: 'src/assets/index.ts',
+    context: 'globalThis',
     watch: {
       clearScreen: false,
     },
     output: {
-      file: 'dist/assets/index.js',
+      dir: 'dist/assets',
       format: 'iife',
       interop: 'auto',
       sourcemap: true,
@@ -50,17 +51,17 @@ module.exports = defineConfig((args) => [
   },
 ]);
 
-function example() {
-  if (!globalThis.httpServer) {
-    globalThis.httpServer = createServer({ root: './example/docs' });
-    globalThis.httpServer.listen(3000);
-  }
-
+/** @returns {import('rollup').Plugin} */
+function typedocExampleBuild() {
   return {
-    name: 'typedoc-example',
+    name: 'typedoc-example-build',
     async writeBundle() {
+      if (!this.meta.watchMode) {
+        return;
+      }
+
       const child = spawn('yarn', ['run', 'example:build'], {
-        cwd: __dirname,
+        cwd: import.meta.dirname,
         stdio: 'inherit',
       });
       await new Promise((resolve, reject) => {
@@ -68,11 +69,43 @@ function example() {
         child.once('error', reject);
       });
 
-      console.log(cyan('[info]'), 'Serving example on', cyan('http://localhost:3000'));
+      startServer();
     },
   };
 }
 
-function cyan(text) {
-  return `\x1b[36m${text}\x1b[0m`;
+/** @returns {import('rollup').Plugin} */
+function typedocExampleCopyAssets() {
+  return {
+    name: 'typedoc-example-copy-assets',
+    async writeBundle() {
+      if (!this.meta.watchMode) {
+        return;
+      }
+
+      const src = './dist/assets';
+      const dest = './example/docs/assets/oxide';
+
+      try {
+        await fs.access(`${src}/rustdoc`, fs.constants.F_OK);
+        await fs.cp(src, dest, { recursive: true });
+      } catch {
+        this.warn('Rustdoc front-end assets are missing.');
+        this.warn('Please run `yarn download`.');
+      }
+
+      startServer();
+    },
+  };
+}
+
+function startServer() {
+  if (!globalThis.httpServer) {
+    globalThis.httpServer = createServer({ root: './example/docs' });
+    globalThis.httpServer.listen(3000);
+  }
+
+  console.log('┌──────────────────────────────────────────┐');
+  console.log('│ Serving example on http://localhost:3000 │');
+  console.log('└──────────────────────────────────────────┘');
 }

@@ -1,19 +1,15 @@
-import slug from 'slug';
 import {
-  DeclarationReflection,
   DefaultTheme,
   DefaultThemeRenderContext,
-  DocumentReflection,
   Options,
   PageEvent,
   Reflection,
   ReflectionCategory,
   ReflectionGroup,
-  ReflectionKind,
   Router,
 } from 'typedoc';
 
-import { transformTypography } from './utils';
+import { itemLink, itemSlug, ReflectionWithLink, sectionSlug, transformTypography } from './utils';
 
 export class OxideContextBase extends DefaultThemeRenderContext {
   constructor(router: Router, theme: DefaultTheme, page: PageEvent<Reflection>, options: Options) {
@@ -32,25 +28,14 @@ export class OxideContextBase extends DefaultThemeRenderContext {
   }
 
   protected sectionSlug(section: ReflectionGroup | ReflectionCategory) {
-    return slug(`section ${section.title}`);
+    return sectionSlug(section);
   }
 
-  protected itemSlug(item: DeclarationReflection | DocumentReflection) {
-    const kind = ReflectionKind.classString(item.kind).replace('tsd-kind-', '');
-    return slug(`${kind} ${item.name}`);
+  protected itemSlug(item: ReflectionWithLink) {
+    return itemSlug(item);
   }
 
-  protected itemLink(item: DeclarationReflection | DocumentReflection, nested: boolean) {
-    if (nested || !item.parent) {
-      return this.urlTo(item);
-    }
-
-    const url = this.urlTo(item.parent);
-    const anchor = this.itemSlug(item);
-    if (typeof url !== 'undefined') {
-      return `${url}#${anchor}`;
-    }
-
-    return this.urlTo(item);
+  protected itemLink(item: ReflectionWithLink, forceNested: boolean) {
+    return itemLink((item) => this.urlTo(item)!, item, forceNested);
   }
 }

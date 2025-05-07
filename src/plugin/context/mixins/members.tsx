@@ -3,7 +3,6 @@ import {
   DeclarationReflection,
   DocumentReflection,
   JSX,
-  PageKind,
   ReferenceReflection,
   ReflectionCategory,
   ReflectionFlag,
@@ -14,7 +13,15 @@ import {
 } from 'typedoc';
 
 import { OxideContextBase } from '../base';
-import { breakable, isNestedTable, itemTypeLinkClass, join, partition, transformElement } from '../utils';
+import {
+  breakable,
+  isNestedTable,
+  itemTypeLinkClass,
+  join,
+  partition,
+  ReflectionWithLink,
+  transformElement,
+} from '../utils';
 
 export const MembersMixin = (base: typeof OxideContextBase) =>
   class extends base {
@@ -69,7 +76,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
       );
     }
 
-    protected __members_table = (section: ReflectionCategory | ReflectionGroup, nested: boolean) => {
+    protected __members_table = (section: ReflectionCategory | ReflectionGroup, forceNested: boolean) => {
       const anchor = this.sectionSlug(section);
 
       return (
@@ -85,7 +92,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
                 <dt>
                   <a
                     class={itemTypeLinkClass(item)}
-                    href={this.itemLink(item, nested)}
+                    href={this.itemLink(item, forceNested)}
                     title={item.name}>
                     {item.name}
                   </a>
@@ -101,9 +108,13 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
       );
     };
 
-    private __members_item(item: DeclarationReflection | DocumentReflection) {
-      if (item.variant === 'document') {
+    private __members_item(item: ReflectionWithLink) {
+      if (item instanceof DocumentReflection) {
         return this.__members_doc(item);
+      }
+
+      if (item.kindOf(ReflectionKind.EnumMember)) {
+        return this.__members_enum_member(item);
       }
 
       return this.__members_decl(item);
@@ -114,13 +125,26 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
       debugger;
     }
 
+    private __members_enum_member(decl: DeclarationReflection) {
+      const anchor = this.itemSlug(decl);
+
+      return (
+        <>
+          <section id={anchor} class="variant">
+            <a href={`#${anchor}`} class="anchor">§</a>
+            <h3 class="code-header">{decl.name} = {transformTokens(this.type(decl.type))}</h3>
+          </section>
+          <div class="docblock">
+            {this.commentSummary(decl)}
+            {this.commentTags(decl)}
+          </div>
+        </>
+      );
+    }
+
     private __members_decl(decl: DeclarationReflection) {
       const anchor = this.itemSlug(decl);
       const source = this.__members_source(decl);
-
-      if (decl.kindOf(ReflectionKind.EnumMember)) {
-        return this.__members_variant(decl);
-      }
 
       return (
         <details class="toggle implementors-toggle" open>
@@ -135,23 +159,6 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
             {this.__members_detail(decl)}
           </div>
         </details>
-      );
-    }
-
-    private __members_variant(decl: DeclarationReflection) {
-      const anchor = this.itemSlug(decl);
-
-      return (
-        <>
-          <section id={anchor} class="variant">
-            <a href={`#${anchor}`} class="anchor">§</a>
-            <h3 class="code-header">{decl.name} = {transformClassName(this.type(decl.type))}</h3>
-          </section>
-          <div class="docblock">
-            {this.commentSummary(decl)}
-            {this.commentTags(decl)}
-          </div>
-        </>
       );
     }
 
@@ -186,7 +193,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
               <a href={`#${anchor}`} class="anchor">§</a>
 
               <h4 class="code-header">
-                {transformClassName(this.memberSignatureTitle(decl))}
+                {transformTokens(this.memberSignatureTitle(decl))}
               </h4>
             </section>
           </summary>
@@ -240,11 +247,11 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
                 <span class="struct">{prefix}</span>
 
                 {breakable(decl.name)}
-                {transformClassName(this.__members_type_params(decl.typeParameters))}
+                {transformTokens(this.__members_type_params(decl.typeParameters))}
 
                 {decl.type && [
                   delimeter,
-                  transformClassName(this.type(decl.type)),
+                  transformTokens(this.type(decl.type)),
                 ]}
 
                 {!decl.type && (decl.groups || decl.categories) && [
@@ -305,10 +312,11 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
     }
   };
 
-function transformClassName(children: JSX.Children) {
+function transformTokens(children: JSX.Children) {
   return transformElement(children, (element) => {
     const props = {
       'class': undefined as string | undefined,
+      'href': undefined as string | undefined,
       'data-tsd-kind': undefined as string | undefined,
       ...element.props,
     };
@@ -320,7 +328,7 @@ function transformClassName(children: JSX.Children) {
         classes.push('macro');
       } else if (isPrimitiveType(firstChild)) {
         classes.push('primitive');
-      } else if (props['data-tsd-kind'] === 'Type Parameter') {
+      } else if (props['data-tsd-kind'] === 'Type Parameter' || classes.includes('tsd-kind-type-parameter')) {
         classes.push('trait');
       } else {
         classes.push('associatedtype');
@@ -331,6 +339,7 @@ function transformClassName(children: JSX.Children) {
     }
     if (classes.includes('tsd-kind-type-parameter')) {
       classes.push('trait');
+      delete props.href;
     }
     if (classes.includes('tsd-kind-call-signature')) {
       classes.push('method');

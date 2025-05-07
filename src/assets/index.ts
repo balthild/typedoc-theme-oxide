@@ -1,12 +1,13 @@
 import './style.css';
+
 import { html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import { throttle } from 'lodash-es';
-import { Index } from 'lunr';
 import { ReflectionKind } from 'typedoc/models';
 
-import { getReflectionKindName, loadData, SearchItem, TypeDocData } from './data';
+import { SearchIndex, SearchItem } from '../lib/types';
+import { getReflectionKindName, loadSearchIndex } from './data';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const form = document.querySelector('rustdoc-search .search-form') as HTMLFormElement;
@@ -21,55 +22,59 @@ document.addEventListener('DOMContentLoaded', async () => {
     event.stopPropagation();
   });
 
-  const data = await loadData();
-  const index = Index.load(data.search.index);
-
-  console.log(data);
+  const index = await loadSearchIndex();
+  console.log(index);
 
   input.addEventListener(
     'input',
-    throttle((event) => {
+    throttle(async (event) => {
       const text = event.target.value?.trim();
 
       const [hide, show] = text ? [main, alt] : [alt, main];
       hide.classList.add('hidden');
       show.classList.remove('hidden');
 
-      results.items = text ? performSearch(text, data, index) : [];
-    }, 500),
+      results.items = await performSearch(text, index);
+    }, 300),
   );
 });
 
-function performSearch(text: string, data: TypeDocData, index: Index) {
-  // Perform a wildcard search
-  const query = text
-    .split(/\s+/)
-    .filter((x) => x)
-    .map((x) => `*${x}*`)
-    .join(' ')
-    .trim();
-
-  const items = index.search(query);
-  if (items.length === 0) {
+async function performSearch(query: string, index: SearchIndex) {
+  if (!query.length) {
     return [];
   }
 
-  for (const item of items) {
-    const row = data.search.rows[Number(item.ref)];
+  const items = await index.search({
+    query,
+    enrich: true,
+    merge: true,
+  });
 
-    // boost score by exact match on name
-    if (row.name.toLowerCase().startsWith(text.toLowerCase())) {
-      item.score *= 10 / (1 + Math.abs(row.name.length - text.length));
-    }
-  }
+  console.log(items);
 
-  items.sort((a, b) => b.score - a.score);
-
-  return items.map((x) => data.search.rows[Number(x.ref)]);
+  return items.map((x) => x.doc).filter((x) => x !== null);
 }
 
 @customElement('oxide-search-results')
 class OxideSearchResults extends LitElement {
+  static base = document.documentElement.dataset.base;
+
+  static classes = {
+    [ReflectionKind.ClassMember]: 'fn',
+    [ReflectionKind.Function]: 'fn',
+    [ReflectionKind.Property]: 'fn',
+    [ReflectionKind.Method]: 'fn',
+    [ReflectionKind.CallSignature]: 'fn',
+    [ReflectionKind.IndexSignature]: 'fn',
+    [ReflectionKind.GetSignature]: 'fn',
+    [ReflectionKind.SetSignature]: 'fn',
+    [ReflectionKind.Accessor]: 'fn',
+    [ReflectionKind.ConstructorSignature]: 'primitive',
+    [ReflectionKind.Constructor]: 'primitive',
+    [ReflectionKind.EnumMember]: 'macro',
+    [ReflectionKind.Variable]: 'macro',
+  } as Record<number, string>;
+
   @property({ attribute: false })
   accessor items: SearchItem[] = [];
 
@@ -81,28 +86,14 @@ class OxideSearchResults extends LitElement {
   render() {
     const items = this.items.map((item) => {
       const trace = map(
-        item.parent?.split('.') ?? [],
+        item.parent?.split('.').filter((x) => x) ?? [],
         (name) => html`<span class="parent">${name}.</span>`,
       );
 
-      const classes = {
-        [ReflectionKind.ClassMember]: 'fn',
-        [ReflectionKind.Function]: 'fn',
-        [ReflectionKind.Property]: 'fn',
-        [ReflectionKind.Method]: 'fn',
-        [ReflectionKind.CallSignature]: 'fn',
-        [ReflectionKind.IndexSignature]: 'fn',
-        [ReflectionKind.GetSignature]: 'fn',
-        [ReflectionKind.SetSignature]: 'fn',
-        [ReflectionKind.Accessor]: 'fn',
-        [ReflectionKind.ConstructorSignature]: 'primitive',
-        [ReflectionKind.Constructor]: 'primitive',
-        [ReflectionKind.EnumMember]: 'macro',
-        [ReflectionKind.Variable]: 'macro',
-      } as Record<number, string>;
+      const classname = OxideSearchResults.classes[item.kind] ?? 'mod';
 
       return html`
-        <a class="result-item" href="${item.url}">
+        <a class="result-item" href="${OxideSearchResults.base}${item.url}">
           <span class="result-name">
             <span class="typename">
               ${getReflectionKindName(item.kind)}
@@ -110,7 +101,7 @@ class OxideSearchResults extends LitElement {
           </span>
           <span class="result-name">
             <div class="path">
-              ${trace}<span class="${classes[item.kind] ?? 'mod'}">${item.name}</span>
+              ${trace}<span class="${classname}">${item.name}</span>
             </div>
           </span>
         </a>

@@ -1,11 +1,12 @@
-const path = require('path');
-const fs = require('fs').promises;
-const { fetch } = require('undici');
-const CleanCSS = require('clean-css');
-const { minify } = require('terser');
+import * as fs from 'fs/promises';
+import { join } from 'path';
+
+import CleanCSS from 'clean-css';
+import { minify } from 'terser';
+import { fetch } from 'undici';
 
 const urlPrefix = 'https://cdn.jsdelivr.net/gh/rust-lang/rust@1.86.0/src/librustdoc/html/static';
-const destPrefix = path.join(__dirname, '..', 'dist', 'assets', 'rustdoc');
+const destPrefix = join(import.meta.dirname, '..', 'dist', 'assets', 'rustdoc');
 
 main();
 
@@ -22,7 +23,7 @@ async function downloadStyle() {
   console.log('Downloading and processing rustdoc.css');
 
   const src = `${urlPrefix}/css/rustdoc.css`;
-  const dest = path.join(destPrefix, 'rustdoc.css');
+  const dest = join(destPrefix, 'rustdoc.css');
 
   const response = await fetch(src);
   let source = await response.text();
@@ -49,7 +50,7 @@ async function downloadMainJs() {
   console.log('Downloading and processing main.js');
 
   const src = `${urlPrefix}/js/main.js`;
-  const dest = path.join(destPrefix, 'main.js');
+  const dest = join(destPrefix, 'main.js');
 
   const response = await fetch(src);
   let source = await response.text();
@@ -74,7 +75,7 @@ async function downloadSettingsJs() {
   console.log('Downloading and processing settings.js');
 
   const src = `${urlPrefix}/js/settings.js`;
-  const dest = path.join(destPrefix, 'settings.js');
+  const dest = join(destPrefix, 'settings.js');
 
   const response = await fetch(src);
   let source = await response.text();

@@ -1,7 +1,7 @@
 {
 	"entryPoints": ["monaco.d.ts"],
 	"out": "./docs",
-	"plugin": ["../dist/index.js"],
+	"plugin": ["../dist/plugin/index.js"],
 	"theme": "oxide",
 	"name": "Monaco Editor",
 	"readme": "./README.md",

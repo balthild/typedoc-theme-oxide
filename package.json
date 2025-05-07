@@ -21,20 +21,20 @@
     "prepublishOnly": "yarn run clean && yarn run build"
   },
   "packageManager": "yarn@4.9.1",
-  "main": "dist/index.js",
+  "type": "module",
+  "main": "dist/plugin/index.js",
   "files": [
     "dist"
   ],
   "dependencies": {
     "cheerio": "^1.0.0-rc.11",
+    "flexsearch": "^0.8.161",
     "slug": "^10.0.0"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^28.0.3",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-typescript": "^12.1.2",
     "@types/lodash-es": "^4",
-    "@types/lunr": "^2",
     "@types/node": "^22.15.3",
     "@types/slug": "^5.0.9",
     "clean-css": "^5.3.0",
@@ -42,7 +42,6 @@
     "http-server": "^14.1.1",
     "lit": "^3.3.0",
     "lodash-es": "^4.17.21",
-    "lunr": "patch:lunr@npm%3A2.3.9#~/.yarn/patches/lunr-npm-2.3.9-fa3aa9c2d6.patch",
     "postcss": "^8.5.3",
     "rollup": "^4.40.1",
     "rollup-plugin-postcss": "^4.0.2",

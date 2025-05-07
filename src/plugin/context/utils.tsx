@@ -1,8 +1,10 @@
 import * as cheerio from 'cheerio';
+import slug from 'slug';
 import {
   DeclarationReflection,
   DocumentReflection,
   JSX,
+  Reflection,
   ReflectionCategory,
   ReflectionGroup,
   ReflectionKind,
@@ -12,7 +14,7 @@ export function isNestedTable(section: ReflectionCategory | ReflectionGroup) {
   return section.children.every(isNestedItem);
 }
 
-export function isNestedItem(item: DeclarationReflection | DocumentReflection) {
+export function isNestedItem(item: ReflectionWithLink) {
   return item.kindOf([
     ReflectionKind.ExportContainer,
     ReflectionKind.Interface,
@@ -21,7 +23,7 @@ export function isNestedItem(item: DeclarationReflection | DocumentReflection) {
   ]);
 }
 
-export function itemTypeLinkClass(item: DeclarationReflection | DocumentReflection): string {
+export function itemTypeLinkClass(item: ReflectionWithLink): string {
   switch (item.kind) {
     case ReflectionKind.Module:
     case ReflectionKind.Namespace:
@@ -118,4 +120,33 @@ export function partition<T>(items: T[], predicate: (_: T) => boolean): [T[], T[
   }
 
   return [satisfied, unsatisfied];
+}
+
+export function sectionSlug(section: ReflectionGroup | ReflectionCategory) {
+  return slug(`section ${section.title}`);
+}
+
+export type ReflectionWithLink = DeclarationReflection | DocumentReflection;
+
+export function itemSlug(item: ReflectionWithLink) {
+  const kind = ReflectionKind.classString(item.kind).replace('tsd-kind-', '');
+  return slug(`${kind} ${item.name}`);
+}
+
+export function itemLink(
+  getUrl: (_: Reflection) => string,
+  item: ReflectionWithLink,
+  forceNested: boolean,
+) {
+  if (forceNested || !item.parent || isNestedItem(item)) {
+    return getUrl(item);
+  }
+
+  const url = getUrl(item.parent);
+  const anchor = itemSlug(item);
+  if (typeof url !== 'undefined') {
+    return `${url}#${anchor}`;
+  }
+
+  return getUrl(item);
 }
