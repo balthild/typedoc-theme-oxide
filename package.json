@@ -17,7 +17,7 @@
     "clean": "rm -rf dist example/docs",
     "download": "node scripts/download-assets.js",
     "example:build": "cd example && typedoc --options ./typedoc.json",
-    "example:deploy": "gh-pages -d ./example/docs",
+    "example:deploy": "yarn build && yarn example:build && gh-pages -d ./example/docs",
     "release": "release-it"
   },
   "packageManager": "yarn@4.9.1",
@@ -54,8 +54,5 @@
   },
   "peerDependencies": {
     "typedoc": "^0.28.4"
-  },
-  "resolutions": {
-    "lunr@npm:^2.3.9": "patch:lunr@npm%3A2.3.9#~/.yarn/patches/lunr-npm-2.3.9-fa3aa9c2d6.patch"
   }
 }
