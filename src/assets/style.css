@@ -22,6 +22,7 @@ rustdoc-toolbar #help-button .infos {
   display: none;
 }
 
+/* TODO: rewrite with css grid */
 oxide-search-results .search-results.active {
   display: table;
   width: 100%;

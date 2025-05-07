@@ -1,7 +1,6 @@
 import { ContainerReflection, DeclarationReflection, JSX, PageEvent, Reflection, ReflectionKind } from 'typedoc';
 
 import { OxideContextBase } from '../base';
-import { itemTypeLinkClass } from '../utils';
 
 export const ContainerMixin = (base: typeof OxideContextBase) =>
   class extends base {
@@ -11,6 +10,9 @@ export const ContainerMixin = (base: typeof OxideContextBase) =>
       return (
         <>
           <div class="main-heading">
+            <div class="rustdoc-breadcrumbs">
+              {this.__container_breadcrumb(page.model.parent)}
+            </div>
             <h1>
               {ReflectionKind.singularString(model.kind)} <span>{model.name}</span>
               <button id="copy-path" title="Copy item path to clipboard">Copy item path</button>
@@ -35,10 +37,8 @@ export const ContainerMixin = (base: typeof OxideContextBase) =>
       );
     };
 
-    private __container_breadcrumb(model?: Reflection, trailing = true): JSX.Children[] {
-      // TODO
-
-      if (model === undefined || (model.isProject() && !trailing)) {
+    private __container_breadcrumb(model?: Reflection, last = true): JSX.Children[] {
+      if (!model || model.isProject()) {
         return [];
       }
 
@@ -46,12 +46,8 @@ export const ContainerMixin = (base: typeof OxideContextBase) =>
         return this.__container_breadcrumb(model.parent);
       }
 
-      const trail: JSX.Children[] = [];
-      if (trailing) {
-        const className = itemTypeLinkClass(model as DeclarationReflection);
-        trail.push(<a href="#" class={className}>{model.name}</a>);
-      } else {
-        trail.push(<a href={this.urlTo(model)}>{model.name}</a>);
+      const trail: JSX.Children = [<a href={this.urlTo(model)}>{model.name}</a>];
+      if (!last) {
         trail.push('.');
         trail.push(<wbr />);
       }
