@@ -98,8 +98,7 @@ class OxideSearchResults extends LitElement {
             <span class="typename">
               ${getReflectionKindName(item.kind)}
             </span>
-          </span>
-          <span class="result-name">
+
             <div class="path">
               ${trace}<span class="${classname}">${item.name}</span>
             </div>

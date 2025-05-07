@@ -1,6 +1,7 @@
 import resolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 import postcss from 'rollup-plugin-postcss';
+import nested from 'postcss-nested';
 import { createServer } from 'http-server';
 import { defineConfig } from 'rollup';
 import { spawn } from 'child_process';
@@ -34,7 +35,7 @@ export default defineConfig([
     plugins: [
       typescript(),
       resolve({ extensions: ['.ts', '.tsx', '.json', '.node'] }),
-      postcss({ extract: true, sourceMap: true }),
+      postcss({ extract: true, sourceMap: true, plugins: [nested()] }),
       typedocExampleCopyAssets(),
     ],
     input: 'src/assets/index.ts',

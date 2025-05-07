@@ -2810,17 +2810,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lunr@npm:2.3.9":
+"lunr@npm:^2.3.9":
   version: 2.3.9
   resolution: "lunr@npm:2.3.9"
   checksum: 10c0/77d7dbb4fbd602aac161e2b50887d8eda28c0fa3b799159cee380fbb311f1e614219126ecbbd2c3a9c685f1720a8109b3c1ca85cc893c39b6c9cc6a62a1d8a8b
-  languageName: node
-  linkType: hard
-
-"lunr@patch:lunr@npm%3A2.3.9#~/.yarn/patches/lunr-npm-2.3.9-fa3aa9c2d6.patch":
-  version: 2.3.9
-  resolution: "lunr@patch:lunr@npm%3A2.3.9#~/.yarn/patches/lunr-npm-2.3.9-fa3aa9c2d6.patch::version=2.3.9&hash=331224"
-  checksum: 10c0/cfcee8a30469e03367551f4a04af4bb0985a022d573d62f8d2d984a6646e9d428fd18c055bab20480690136d9dc960ebaaa08771839bb58eb4638aa2910d95f3
   languageName: node
   linkType: hard
 
@@ -3758,6 +3751,17 @@ __metadata:
   peerDependencies:
     postcss: ^8.0.0
   checksum: 10c0/944e52c67900869c4f5bbdec7c91b31564ce80aa6addb2eea61e11d336d9f84873de17f10782fa0bab9afae491ce24590a83dac6d825fc4eff625cc85bbbca02
+  languageName: node
+  linkType: hard
+
+"postcss-nested@npm:^7.0.2":
+  version: 7.0.2
+  resolution: "postcss-nested@npm:7.0.2"
+  dependencies:
+    postcss-selector-parser: "npm:^7.0.0"
+  peerDependencies:
+    postcss: ^8.2.14
+  checksum: 10c0/b467f328c89c5b0dcd1b569ae083f6163235c0cac09494a0b284eef5275fa1386bbc26c66c85adf194cef0a65d315994140724a34539a096e5acd39d9c753338
   languageName: node
   linkType: hard
 
@@ -4753,6 +4757,7 @@ __metadata:
     lit: "npm:^3.3.0"
     lodash-es: "npm:^4.17.21"
     postcss: "npm:^8.5.3"
+    postcss-nested: "npm:^7.0.2"
     release-it: "npm:^19.0.2"
     rollup: "npm:^4.40.1"
     rollup-plugin-postcss: "npm:^4.0.2"
