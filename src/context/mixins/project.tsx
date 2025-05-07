@@ -15,9 +15,6 @@ export const ProjectMixin = (base: typeof OxideContextBase) =>
               <button id="copy-path" title="Copy item path to clipboard">Copy item path</button>
             </h1>
             <rustdoc-toolbar />
-            <span class="sub-heading">
-              <a class="src" href="../src/native_dialog/lib.rs.html#1-13">Source</a>
-            </span>
           </div>
 
           <details class="toggle top-doc" open>

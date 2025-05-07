@@ -11,18 +11,11 @@ export const ContainerMixin = (base: typeof OxideContextBase) =>
       return (
         <>
           <div class="main-heading">
-            <h1 class="fqn">
-              <span class="in-band">
-                {ReflectionKind.singularString(model.kind)} {this.__container_breadcrumb(model)}
-                <button id="copy-path" title="Copy item path to clipboard">Copy item path</button>
-              </span>
+            <h1>
+              {ReflectionKind.singularString(model.kind)} <span>{model.name}</span>
+              <button id="copy-path" title="Copy item path to clipboard">Copy item path</button>
             </h1>
-
-            <span class="out-of-band">
-              <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class="inner">−</span>]
-              </a>
-            </span>
+            <rustdoc-toolbar />
           </div>
 
           {model.hasComment() && (
@@ -43,6 +36,8 @@ export const ContainerMixin = (base: typeof OxideContextBase) =>
     };
 
     private __container_breadcrumb(model?: Reflection, trailing = true): JSX.Children[] {
+      // TODO
+
       if (model === undefined || (model.isProject() && !trailing)) {
         return [];
       }

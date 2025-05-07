@@ -87,7 +87,6 @@ class OxideSearchResults extends LitElement {
 
       const classes = {
         [ReflectionKind.ClassMember]: 'fn',
-        [ReflectionKind.Variable]: 'fn',
         [ReflectionKind.Function]: 'fn',
         [ReflectionKind.Property]: 'fn',
         [ReflectionKind.Method]: 'fn',
@@ -99,6 +98,7 @@ class OxideSearchResults extends LitElement {
         [ReflectionKind.ConstructorSignature]: 'primitive',
         [ReflectionKind.Constructor]: 'primitive',
         [ReflectionKind.EnumMember]: 'macro',
+        [ReflectionKind.Variable]: 'macro',
       } as Record<number, string>;
 
       return html`
@@ -120,7 +120,6 @@ class OxideSearchResults extends LitElement {
     return html`
       <div class="main-heading">
         <h1 class="search-results-title">Results</h1>
-        <rustdoc-toolbar></rustdoc-toolbar>
       </div>
 
       <div id="results">
