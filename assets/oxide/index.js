@@ -2635,13 +2635,18 @@
         });
     }
 
+    async function loadDeflateData(url) {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const stream = blob.stream().pipeThrough(new DecompressionStream('deflate'));
+        return await new Response(stream).json();
+    }
     async function loadSearchIndex() {
         const index = createSearchDocument();
-        const base = `${document.documentElement.dataset.base}assets/oxide/search`;
-        const parts = await (await fetch(`${base}/index.json`)).json();
-        for (const part of parts) {
-            const data = await (await fetch(`${base}/${part}`)).json();
-            index.import(part, data);
+        const base = `${document.documentElement.dataset.base}assets/oxide`;
+        const parts = await loadDeflateData(`${base}/search-index.defalte`);
+        for (const [key, data] of Object.entries(parts)) {
+            index.import(key, data);
         }
         return index;
     }
