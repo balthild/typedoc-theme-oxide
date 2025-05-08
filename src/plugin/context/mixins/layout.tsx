@@ -91,7 +91,6 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
 
           <link rel="stylesheet" href={this.relativeURL('assets/highlight.css')} />
           <link rel="stylesheet" href={this.relativeURL('assets/oxide/index.css')} />
-          <script src={this.relativeURL('assets/main.js')}></script>
           <script src={this.relativeURL('assets/oxide/index.js')}></script>
 
           {this.options.getValue('customCss') && <link rel="stylesheet" href={this.relativeURL('assets/custom.css')} />}
