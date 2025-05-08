@@ -23,8 +23,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     event.stopPropagation();
   });
 
-  // TODO: load search index only after user typed in search input
-  const index = await loadSearchIndex();
+  let index: SearchIndex;
+  const lazyLoadSearchIndex = async () => {
+    index = await loadSearchIndex();
+  };
 
   input.addEventListener(
     'input',
@@ -35,9 +37,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       hide.classList.add('hidden');
       show.classList.remove('hidden');
 
-      results.project = vars.dataset.currentCrate!;
-      results.query = text;
+      lazyLoadSearchIndex();
+      if (!index) {
+        return;
+      }
+
       results.items = await performSearch(text, index);
+      results.query = text;
+      results.project = vars.dataset.currentCrate!;
+      results.loading = false;
     }, 300),
   );
 });
@@ -53,14 +61,12 @@ async function performSearch(query: string, index: SearchIndex) {
     merge: true,
   });
 
-  console.log(items);
-
   return items.map((x) => x.doc).filter((x) => x !== null);
 }
 
 @customElement('oxide-search-results')
 class OxideSearchResults extends LitElement {
-  static base = document.documentElement.dataset.base;
+  static base = document.documentElement.dataset.base!;
 
   static classes = {
     [ReflectionKind.ClassMember]: 'fn',
@@ -79,6 +85,9 @@ class OxideSearchResults extends LitElement {
   } as Record<number, string>;
 
   @property({ attribute: false })
+  accessor loading: boolean = true;
+
+  @property({ attribute: false })
   accessor project: string = '';
 
   @property({ attribute: false })
@@ -93,13 +102,26 @@ class OxideSearchResults extends LitElement {
   }
 
   render() {
+    if (this.loading) {
+      return html`
+        <div class="main-heading">
+          <h1 class="search-results-title">Results</h1>
+        </div>
+
+        <div id="results">
+          <div class="search-failed active">
+            Loading...
+          </div>
+        </div>
+      `;
+    }
+
     const items = this.items.map((item) => {
+      const classname = OxideSearchResults.classes[item.kind] ?? 'mod';
       const trace = map(
         item.parent?.split('.').filter((x) => x) ?? [],
         (name) => html`<span class="parent">${name}.</span>`,
       );
-
-      const classname = OxideSearchResults.classes[item.kind] ?? 'mod';
 
       return html`
         <a class="result-item" href="${OxideSearchResults.base}${item.url}">
@@ -116,7 +138,7 @@ class OxideSearchResults extends LitElement {
       `;
     });
 
-    const ddgSearch = encodeURIComponent(`${this.project} ${this.query}`);
+    const ddgQuery = encodeURIComponent(`${this.project} ${this.query}`);
 
     return html`
       <div class="main-heading">
@@ -131,7 +153,7 @@ class OxideSearchResults extends LitElement {
         <div class="search-failed ${this.items.length ? '' : 'active'}">
           No results :(
           <br />
-          Try on <a href="https://duckduckgo.com/?q=${ddgSearch}" target="_blank">DuckDuckGo</a>?
+          Try on <a href="https://duckduckgo.com/?q=${ddgQuery}" target="_blank">DuckDuckGo</a>?
         </div>
       </div>
     `;
