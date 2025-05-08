@@ -1,12 +1,13 @@
 import './style.css';
 
+import { Document } from 'flexsearch';
 import { html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import { throttle } from 'lodash-es';
 import { ReflectionKind } from 'typedoc/models';
 
-import { SearchIndex, SearchItem } from '../lib/types';
+import { SearchItem } from '../lib/types';
 import { getReflectionKindName, loadSearchIndex } from './data';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -21,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     event.stopPropagation();
   });
 
-  let index: Promise<SearchIndex>;
+  let index: Promise<Document<SearchItem>>;
   let controller: AbortController;
 
   input.addEventListener(
@@ -46,12 +47,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   );
 });
 
-async function performSearch(query: string, signal: AbortSignal, index: SearchIndex) {
+async function performSearch(query: string, signal: AbortSignal, index: Document<SearchItem>) {
   if (signal.aborted || !query.length) {
     return;
   }
 
   const items = await index.search({ query, enrich: true, merge: true });
+  console.log(items);
   if (signal.aborted) {
     return;
   }
