@@ -1,8 +1,5 @@
+import { ReflectionKind } from 'typedoc/models';
 import { createSearchDocument } from '../lib';
-
-declare namespace globalThis {
-  const translations: Record<string, string>;
-}
 
 export async function loadDeflateData<T = any>(url: string) {
   const response = await fetch(url);
@@ -23,6 +20,8 @@ export async function loadSearchIndex() {
   return index;
 }
 
-export function getReflectionKindName(kind: number) {
-  return globalThis.translations[`kind_${kind}`];
+export function getReflectionKindName(kind: ReflectionKind) {
+  return ReflectionKind.classString(kind)
+    .replace('tsd-kind-', '')
+    .replace('-', ' ');
 }
