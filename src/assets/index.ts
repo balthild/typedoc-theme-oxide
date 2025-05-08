@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const input = document.querySelector('rustdoc-search .search-input') as HTMLInputElement;
   const results = document.querySelector('oxide-search-results#search') as OxideSearchResults;
 
+  const vars = document.querySelector('meta[name="rustdoc-vars"]') as HTMLMetaElement;
   const main = document.getElementById('main-content')!;
   const alt = document.getElementById('alternative-display')!;
 
@@ -22,8 +23,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     event.stopPropagation();
   });
 
+  // TODO: load search index only after user typed in search input
   const index = await loadSearchIndex();
-  console.log(index);
 
   input.addEventListener(
     'input',
@@ -34,6 +35,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       hide.classList.add('hidden');
       show.classList.remove('hidden');
 
+      results.project = vars.dataset.currentCrate!;
+      results.query = text;
       results.items = await performSearch(text, index);
     }, 300),
   );
@@ -76,6 +79,12 @@ class OxideSearchResults extends LitElement {
   } as Record<number, string>;
 
   @property({ attribute: false })
+  accessor project: string = '';
+
+  @property({ attribute: false })
+  accessor query: string = '';
+
+  @property({ attribute: false })
   accessor items: SearchItem[] = [];
 
   createRenderRoot() {
@@ -107,6 +116,8 @@ class OxideSearchResults extends LitElement {
       `;
     });
 
+    const ddgSearch = encodeURIComponent(`${this.project} ${this.query}`);
+
     return html`
       <div class="main-heading">
         <h1 class="search-results-title">Results</h1>
@@ -119,17 +130,8 @@ class OxideSearchResults extends LitElement {
 
         <div class="search-failed ${this.items.length ? '' : 'active'}">
           No results :(
-          <!--
           <br />
-          Try on <a href="https://duckduckgo.com/?q=rust%20result%3A%3Aok">DuckDuckGo</a>?
-          <br />
-          <br />
-          Or try looking in one of these:
-          <ul>
-            <li>The <a href="https://doc.rust-lang.org/1.86.0/reference/index.html">Rust Reference</a> for technical
-              details about the language.</li>
-          </ul>
-          -->
+          Try on <a href="https://duckduckgo.com/?q=${ddgSearch}" target="_blank">DuckDuckGo</a>?
         </div>
       </div>
     `;
