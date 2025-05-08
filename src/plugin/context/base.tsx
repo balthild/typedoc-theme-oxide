@@ -36,6 +36,6 @@ export class OxideContextBase extends DefaultThemeRenderContext {
   }
 
   protected itemLink(item: ReflectionWithLink, forceNested: boolean) {
-    return itemLink((item) => this.urlTo(item)!, item, forceNested);
+    return itemLink(this, item, forceNested);
   }
 }

@@ -1,13 +1,16 @@
 import * as cheerio from 'cheerio';
 import slug from 'slug';
 import {
+  BaseRouter,
   DeclarationReflection,
+  DefaultThemeRenderContext,
   DocumentReflection,
   JSX,
   Reflection,
   ReflectionCategory,
   ReflectionGroup,
   ReflectionKind,
+  Router,
 } from 'typedoc';
 
 export function isNestedTable(section: ReflectionCategory | ReflectionGroup) {
@@ -134,10 +137,20 @@ export function itemSlug(item: ReflectionWithLink) {
 }
 
 export function itemLink(
-  getUrl: (_: Reflection) => string,
+  factory: Router | DefaultThemeRenderContext,
   item: ReflectionWithLink,
   forceNested: boolean,
 ) {
+  const getUrl = (item: Reflection) => {
+    if (factory instanceof DefaultThemeRenderContext) {
+      return factory.urlTo(item)!;
+    }
+    if (factory instanceof BaseRouter) {
+      return factory.getFullUrl(item);
+    }
+    throw new Error('Unknown URL factory type');
+  };
+
   if (forceNested || !item.parent || isNestedItem(item)) {
     return getUrl(item);
   }

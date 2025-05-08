@@ -1,4 +1,4 @@
-import { ContainerReflection, DeclarationReflection, JSX, PageEvent, Reflection, ReflectionKind } from 'typedoc';
+import { ContainerReflection, JSX, PageEvent, Reflection, ReflectionKind } from 'typedoc';
 
 import { OxideContextBase } from '../base';
 

@@ -14,7 +14,7 @@ import { isNestedTable, partition, ReflectionWithLink } from '../utils';
 export const NavigationMixin = (base: typeof OxideContextBase) =>
   class extends base {
     navigation = (page: PageEvent<Reflection>) => {
-      const { project, model } = page;
+      const { model } = page;
 
       return (
         <>

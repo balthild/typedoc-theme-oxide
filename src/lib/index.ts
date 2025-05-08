@@ -1,4 +1,5 @@
 import { Charset, Document } from 'flexsearch';
+
 import { SearchIndex } from './types';
 
 export function createSearchDocument() {

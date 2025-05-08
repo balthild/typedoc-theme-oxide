@@ -1,19 +1,21 @@
-import resolve from '@rollup/plugin-node-resolve';
-import typescript from '@rollup/plugin-typescript';
-import postcss from 'rollup-plugin-postcss';
-import nested from 'postcss-nested';
-import { createServer } from 'http-server';
-import { defineConfig } from 'rollup';
 import { spawn } from 'child_process';
 import * as fs from 'fs/promises';
 
-export default defineConfig([
-  // The plugin itself
+import resolve from '@rollup/plugin-node-resolve';
+import terser from '@rollup/plugin-terser';
+import typescript from '@rollup/plugin-typescript';
+import { createServer } from 'http-server';
+import nested from 'postcss-nested';
+import { defineConfig } from 'rollup';
+import postcss from 'rollup-plugin-postcss';
+
+export default defineConfig((args) => [
+  // TypeDoc plugin
   {
     plugins: [
       typescript(),
       resolve({ extensions: ['.ts', '.tsx', '.json', '.node'] }),
-      typedocExampleBuild(),
+      args.watch && typedocExampleBuild(),
     ],
     input: 'src/plugin/index.ts',
     external: /(node_modules)/,
@@ -35,8 +37,9 @@ export default defineConfig([
     plugins: [
       typescript(),
       resolve({ extensions: ['.ts', '.tsx', '.json', '.node'] }),
-      postcss({ extract: true, sourceMap: true, plugins: [nested()] }),
-      typedocExampleCopyAssets(),
+      postcss({ extract: true, minimize: !args.watch, sourceMap: true, plugins: [nested()] }),
+      !args.watch && terser(),
+      args.watch && typedocExampleCopyAssets(),
     ],
     input: 'src/assets/index.ts',
     context: 'globalThis',
@@ -57,10 +60,6 @@ function typedocExampleBuild() {
   return {
     name: 'typedoc-example-build',
     async writeBundle() {
-      if (!this.meta.watchMode) {
-        return;
-      }
-
       const child = spawn('yarn', ['run', 'example:build'], {
         cwd: import.meta.dirname,
         stdio: 'inherit',
@@ -80,10 +79,6 @@ function typedocExampleCopyAssets() {
   return {
     name: 'typedoc-example-copy-assets',
     async writeBundle() {
-      if (!this.meta.watchMode) {
-        return;
-      }
-
       const src = './dist/assets';
       const dest = './example/docs/assets/oxide';
 

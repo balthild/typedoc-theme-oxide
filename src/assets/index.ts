@@ -12,9 +12,7 @@ import { getReflectionKindName, loadSearchIndex } from './data';
 document.addEventListener('DOMContentLoaded', async () => {
   const form = document.querySelector('rustdoc-search .search-form') as HTMLFormElement;
   const input = document.querySelector('rustdoc-search .search-input') as HTMLInputElement;
-  const results = document.querySelector('oxide-search-results#search') as OxideSearchResults;
 
-  const vars = document.querySelector('meta[name="rustdoc-vars"]') as HTMLMetaElement;
   const main = document.getElementById('main-content')!;
   const alt = document.getElementById('alternative-display')!;
 
@@ -23,45 +21,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     event.stopPropagation();
   });
 
-  let index: SearchIndex;
-  const lazyLoadSearchIndex = async () => {
-    index = await loadSearchIndex();
-  };
+  let index: Promise<SearchIndex>;
+  let controller: AbortController;
 
   input.addEventListener(
     'input',
     throttle(async (event) => {
-      const text = event.target.value?.trim();
+      if (!index) {
+        index = loadSearchIndex();
+      }
 
-      const [hide, show] = text ? [main, alt] : [alt, main];
+      const query = event.target.value?.trim();
+
+      const [hide, show] = query ? [main, alt] : [alt, main];
       hide.classList.add('hidden');
       show.classList.remove('hidden');
 
-      lazyLoadSearchIndex();
-      if (!index) {
-        return;
-      }
+      controller?.abort();
+      controller = new AbortController();
+      const signal = controller.signal;
 
-      results.items = await performSearch(text, index);
-      results.query = text;
-      results.project = vars.dataset.currentCrate!;
-      results.loading = false;
+      await performSearch(query, signal, await index);
     }, 300),
   );
 });
 
-async function performSearch(query: string, index: SearchIndex) {
-  if (!query.length) {
-    return [];
+async function performSearch(query: string, signal: AbortSignal, index: SearchIndex) {
+  if (signal.aborted || !query.length) {
+    return;
   }
 
-  const items = await index.search({
-    query,
-    enrich: true,
-    merge: true,
-  });
+  const items = await index.search({ query, enrich: true, merge: true });
+  if (signal.aborted) {
+    return;
+  }
 
-  return items.map((x) => x.doc).filter((x) => x !== null);
+  const vars = document.querySelector('meta[name="rustdoc-vars"]') as HTMLMetaElement;
+  const results = document.querySelector('oxide-search-results#search') as OxideSearchResults;
+
+  results.loading = false;
+  results.project = vars.dataset.currentCrate!;
+  results.query = query;
+  results.items = items.map((x) => x.doc).filter((x) => x !== null);
 }
 
 @customElement('oxide-search-results')

@@ -45,7 +45,7 @@ export function load(app: Application) {
             comment: renderTextComment(item),
             kind: item.kind,
             parent: item.parent?.isProject() ? '' : item.parent?.getFullName() ?? '',
-            url: itemLink((item) => app.renderer.router!.getFullUrl(item), item, false),
+            url: itemLink(app.renderer.router!, item, false),
           });
         } catch {}
       });
