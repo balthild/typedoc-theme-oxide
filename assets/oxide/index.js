@@ -58,7 +58,7 @@ var ce;function ue(t,e,i){const n=typeof i,r=typeof t;if("undefined"!==n){if("un
         <a class="result-item" href="${$.base}${t.url}">
           <span class="result-name">
             <span class="typename">
-              ${o=t.kind,globalThis.translations[`kind_${o}`]}
+              ${o=t.kind,Xt.classString(o).replace("tsd-kind-","").replace("-"," ")}
             </span>
 
             <div class="path">
