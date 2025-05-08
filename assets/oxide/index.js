@@ -2658,21 +2658,31 @@
         const form = document.querySelector('rustdoc-search .search-form');
         const input = document.querySelector('rustdoc-search .search-input');
         const results = document.querySelector('oxide-search-results#search');
+        const vars = document.querySelector('meta[name="rustdoc-vars"]');
         const main = document.getElementById('main-content');
         const alt = document.getElementById('alternative-display');
         form.addEventListener('submit', (event) => {
             event.preventDefault();
             event.stopPropagation();
         });
-        const index = await loadSearchIndex();
-        console.log(index);
+        let index;
+        const lazyLoadSearchIndex = async () => {
+            index = await loadSearchIndex();
+        };
         input.addEventListener('input', throttle(async (event) => {
             var _a;
             const text = (_a = event.target.value) === null || _a === void 0 ? void 0 : _a.trim();
             const [hide, show] = text ? [main, alt] : [alt, main];
             hide.classList.add('hidden');
             show.classList.remove('hidden');
+            lazyLoadSearchIndex();
+            if (!index) {
+                return;
+            }
             results.items = await performSearch(text, index);
+            results.query = text;
+            results.project = vars.dataset.currentCrate;
+            results.loading = false;
         }, 300));
     });
     async function performSearch(query, index) {
@@ -2684,20 +2694,34 @@
             enrich: true,
             merge: true,
         });
-        console.log(items);
         return items.map((x) => x.doc).filter((x) => x !== null);
     }
     (() => {
-        var _OxideSearchResults_items_accessor_storage;
+        var _OxideSearchResults_loading_accessor_storage, _OxideSearchResults_project_accessor_storage, _OxideSearchResults_query_accessor_storage, _OxideSearchResults_items_accessor_storage;
         let _classDecorators = [t('oxide-search-results')];
         let _classDescriptor;
         let _classExtraInitializers = [];
         let _classThis;
         let _classSuper = i;
+        let _loading_decorators;
+        let _loading_initializers = [];
+        let _loading_extraInitializers = [];
+        let _project_decorators;
+        let _project_initializers = [];
+        let _project_extraInitializers = [];
+        let _query_decorators;
+        let _query_initializers = [];
+        let _query_extraInitializers = [];
         let _items_decorators;
         let _items_initializers = [];
         let _items_extraInitializers = [];
         var OxideSearchResults = _classThis = class extends _classSuper {
+            get loading() { return __classPrivateFieldGet(this, _OxideSearchResults_loading_accessor_storage, "f"); }
+            set loading(value) { __classPrivateFieldSet(this, _OxideSearchResults_loading_accessor_storage, value, "f"); }
+            get project() { return __classPrivateFieldGet(this, _OxideSearchResults_project_accessor_storage, "f"); }
+            set project(value) { __classPrivateFieldSet(this, _OxideSearchResults_project_accessor_storage, value, "f"); }
+            get query() { return __classPrivateFieldGet(this, _OxideSearchResults_query_accessor_storage, "f"); }
+            set query(value) { __classPrivateFieldSet(this, _OxideSearchResults_query_accessor_storage, value, "f"); }
             get items() { return __classPrivateFieldGet(this, _OxideSearchResults_items_accessor_storage, "f"); }
             set items(value) { __classPrivateFieldSet(this, _OxideSearchResults_items_accessor_storage, value, "f"); }
             createRenderRoot() {
@@ -2705,18 +2729,30 @@
                 return this;
             }
             render() {
+                if (this.loading) {
+                    return x `
+        <div class="main-heading">
+          <h1 class="search-results-title">Results</h1>
+        </div>
+
+        <div id="results">
+          <div class="search-failed active">
+            Loading...
+          </div>
+        </div>
+      `;
+                }
                 const items = this.items.map((item) => {
                     var _a, _b, _c;
-                    const trace = o((_b = (_a = item.parent) === null || _a === void 0 ? void 0 : _a.split('.').filter((x) => x)) !== null && _b !== void 0 ? _b : [], (name) => x `<span class="parent">${name}.</span>`);
-                    const classname = (_c = OxideSearchResults.classes[item.kind]) !== null && _c !== void 0 ? _c : 'mod';
+                    const classname = (_a = OxideSearchResults.classes[item.kind]) !== null && _a !== void 0 ? _a : 'mod';
+                    const trace = o((_c = (_b = item.parent) === null || _b === void 0 ? void 0 : _b.split('.').filter((x) => x)) !== null && _c !== void 0 ? _c : [], (name) => x `<span class="parent">${name}.</span>`);
                     return x `
         <a class="result-item" href="${OxideSearchResults.base}${item.url}">
           <span class="result-name">
             <span class="typename">
               ${getReflectionKindName(item.kind)}
             </span>
-          </span>
-          <span class="result-name">
+
             <div class="path">
               ${trace}<span class="${classname}">${item.name}</span>
             </div>
@@ -2724,6 +2760,7 @@
         </a>
       `;
                 });
+                const ddgQuery = encodeURIComponent(`${this.project} ${this.query}`);
                 return x `
       <div class="main-heading">
         <h1 class="search-results-title">Results</h1>
@@ -2736,33 +2773,36 @@
 
         <div class="search-failed ${this.items.length ? '' : 'active'}">
           No results :(
-          <!--
           <br />
-          Try on <a href="https://duckduckgo.com/?q=rust%20result%3A%3Aok">DuckDuckGo</a>?
-          <br />
-          <br />
-          Or try looking in one of these:
-          <ul>
-            <li>The <a href="https://doc.rust-lang.org/1.86.0/reference/index.html">Rust Reference</a> for technical
-              details about the language.</li>
-          </ul>
-          -->
+          Try on <a href="https://duckduckgo.com/?q=${ddgQuery}" target="_blank">DuckDuckGo</a>?
         </div>
       </div>
     `;
             }
             constructor() {
                 super(...arguments);
-                _OxideSearchResults_items_accessor_storage.set(this, __runInitializers$3(this, _items_initializers, []));
+                _OxideSearchResults_loading_accessor_storage.set(this, __runInitializers$3(this, _loading_initializers, true));
+                _OxideSearchResults_project_accessor_storage.set(this, (__runInitializers$3(this, _loading_extraInitializers), __runInitializers$3(this, _project_initializers, '')));
+                _OxideSearchResults_query_accessor_storage.set(this, (__runInitializers$3(this, _project_extraInitializers), __runInitializers$3(this, _query_initializers, '')));
+                _OxideSearchResults_items_accessor_storage.set(this, (__runInitializers$3(this, _query_extraInitializers), __runInitializers$3(this, _items_initializers, [])));
                 __runInitializers$3(this, _items_extraInitializers);
             }
         };
+        _OxideSearchResults_loading_accessor_storage = new WeakMap();
+        _OxideSearchResults_project_accessor_storage = new WeakMap();
+        _OxideSearchResults_query_accessor_storage = new WeakMap();
         _OxideSearchResults_items_accessor_storage = new WeakMap();
         __setFunctionName(_classThis, "OxideSearchResults");
         (() => {
             var _a;
             const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create((_a = _classSuper[Symbol.metadata]) !== null && _a !== void 0 ? _a : null) : void 0;
+            _loading_decorators = [n({ attribute: false })];
+            _project_decorators = [n({ attribute: false })];
+            _query_decorators = [n({ attribute: false })];
             _items_decorators = [n({ attribute: false })];
+            __esDecorate$3(_classThis, null, _loading_decorators, { kind: "accessor", name: "loading", static: false, private: false, access: { has: obj => "loading" in obj, get: obj => obj.loading, set: (obj, value) => { obj.loading = value; } }, metadata: _metadata }, _loading_initializers, _loading_extraInitializers);
+            __esDecorate$3(_classThis, null, _project_decorators, { kind: "accessor", name: "project", static: false, private: false, access: { has: obj => "project" in obj, get: obj => obj.project, set: (obj, value) => { obj.project = value; } }, metadata: _metadata }, _project_initializers, _project_extraInitializers);
+            __esDecorate$3(_classThis, null, _query_decorators, { kind: "accessor", name: "query", static: false, private: false, access: { has: obj => "query" in obj, get: obj => obj.query, set: (obj, value) => { obj.query = value; } }, metadata: _metadata }, _query_initializers, _query_extraInitializers);
             __esDecorate$3(_classThis, null, _items_decorators, { kind: "accessor", name: "items", static: false, private: false, access: { has: obj => "items" in obj, get: obj => obj.items, set: (obj, value) => { obj.items = value; } }, metadata: _metadata }, _items_initializers, _items_extraInitializers);
             __esDecorate$3(null, _classDescriptor = { value: _classThis }, _classDecorators, { kind: "class", name: _classThis.name, metadata: _metadata }, null, _classExtraInitializers);
             OxideSearchResults = _classThis = _classDescriptor.value;
