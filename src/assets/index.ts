@@ -53,7 +53,6 @@ async function performSearch(query: string, signal: AbortSignal, index: Document
   }
 
   const items = await index.search({ query, enrich: true, merge: true });
-  console.log(items);
   if (signal.aborted) {
     return;
   }

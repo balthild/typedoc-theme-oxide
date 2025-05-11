@@ -13,15 +13,7 @@ import {
 } from 'typedoc';
 
 import { OxideContextBase } from '../base';
-import {
-  breakable,
-  isNestedTable,
-  itemTypeLinkClass,
-  join,
-  partition,
-  ReflectionWithLink,
-  transformElement,
-} from '../utils';
+import { breakable, isNestedTable, join, partition, ReflectionWithLink, transformElement } from '../utils';
 
 export const MembersMixin = (base: typeof OxideContextBase) =>
   class extends base {
@@ -312,6 +304,28 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
     }
   };
 
+export function itemTypeLinkClass(item: ReflectionWithLink): string {
+  switch (item.kind) {
+    case ReflectionKind.Module:
+    case ReflectionKind.Namespace:
+      return 'mod';
+    case ReflectionKind.Function:
+      return 'fn';
+    case ReflectionKind.TypeAlias:
+      return 'type';
+    case ReflectionKind.Enum:
+      return 'enum';
+    case ReflectionKind.Class:
+      return 'struct';
+    case ReflectionKind.Interface:
+      return 'trait';
+    case ReflectionKind.Variable:
+      return 'constant';
+    default:
+      return 'foreigntype';
+  }
+}
+
 function transformTokens(children: JSX.Children) {
   return transformElement(children, (element) => {
     const props = {
@@ -339,6 +353,7 @@ function transformTokens(children: JSX.Children) {
     }
     if (classes.includes('tsd-kind-type-parameter')) {
       classes.push('trait');
+      element.tag = 'span';
       delete props.href;
     }
     if (classes.includes('tsd-kind-call-signature')) {

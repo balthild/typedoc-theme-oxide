@@ -15,11 +15,11 @@ export function createSearchDocument() {
           encoder: new Encoder(Charset.LatinBalance).assign({
             normalize(text) {
               // split the names in camel case
-              let pieces = text.replace(/\d+/g, '').split(/(?<=[a-z])(?=[A-Z])/);
-              if (pieces.length > 1) {
-                pieces.push(text);
+              let words = text.replace(/\d+/g, ' ').split(/(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])/);
+              if (words.length > 1) {
+                words.push(text);
               }
-              return pieces.map((x) => x.toLowerCase()).join(' ');
+              return words.join(' ').toLowerCase();
             },
           }),
         },

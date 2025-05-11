@@ -26,28 +26,6 @@ export function isNestedItem(item: ReflectionWithLink) {
   ]);
 }
 
-export function itemTypeLinkClass(item: ReflectionWithLink): string {
-  switch (item.kind) {
-    case ReflectionKind.Module:
-    case ReflectionKind.Namespace:
-      return 'mod';
-    case ReflectionKind.Function:
-      return 'fn';
-    case ReflectionKind.TypeAlias:
-      return 'type';
-    case ReflectionKind.Enum:
-      return 'enum';
-    case ReflectionKind.Class:
-      return 'struct';
-    case ReflectionKind.Interface:
-      return 'trait';
-    case ReflectionKind.Variable:
-      return 'constant';
-    default:
-      return 'foreigntype';
-  }
-}
-
 export function transformElement(
   children: JSX.Children,
   transformer: (_: JSX.Element) => JSX.Element,
