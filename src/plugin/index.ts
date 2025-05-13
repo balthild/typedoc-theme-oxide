@@ -1,5 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { promisify } from 'util';
 import { deflate } from 'zlib';
 
 import { Application, Reflection, RendererEvent } from 'typedoc';
@@ -51,17 +52,12 @@ export function load(app: Application) {
       });
 
     const parts: Record<string, any> = {};
-    await document.export(async function (key, data) {
+    await document.export(async (key, data) => {
       app.logger.info(`Search index part: ${key}`);
       parts[key] = JSON.parse(data);
     });
 
-    const buffer = await new Promise<Buffer>((resolve, reject) => {
-      deflate(Buffer.from(JSON.stringify(parts)), (err, data) => {
-        if (err) reject(err);
-        else resolve(data);
-      });
-    });
+    const buffer = await promisify(deflate)(Buffer.from(JSON.stringify(parts)));
 
     const dest = path.join(event.outputDirectory, 'assets', 'oxide');
     await fs.mkdir(dest, { recursive: true });

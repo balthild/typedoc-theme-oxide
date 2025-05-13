@@ -8,7 +8,7 @@ import { fetch } from 'undici';
 const urlPrefix = 'https://cdn.jsdelivr.net/gh/rust-lang/rust@1.86.0/src/librustdoc/html/static';
 const destPrefix = join(import.meta.dirname, '..', 'dist', 'assets', 'rustdoc');
 
-main();
+await main();
 
 async function main() {
   await fs.rm(destPrefix, { recursive: true, force: true });
@@ -37,7 +37,7 @@ async function downloadStyle() {
 
   source = [
     `/**`,
-    ` * Minified with clean-css. Relative urls are replaced with absolute urls of jsDelivr.`,
+    ` * Patched by typedoc-theme-oxide. Minified with clean-css.`,
     ` * Original file: ${src}`,
     ` */`,
     new CleanCSS().minify(source).styles,
@@ -77,7 +77,7 @@ async function downloadMainJs() {
 
   source = [
     `/**`,
-    ` * Minified with terser.`,
+    ` * Patched by typedoc-theme-oxide. Minified with terser.`,
     ` * Original file: ${src}`,
     ` */`,
     (await minify(source)).code,
@@ -97,7 +97,7 @@ async function downloadSettingsJs() {
 
   source = [
     `/**`,
-    ` * Minified with terser.`,
+    ` * Patched by typedoc-theme-oxide. Minified with terser.`,
     ` * Original file: ${src}`,
     ` */`,
     (await minify(source)).code,
