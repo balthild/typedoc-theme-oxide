@@ -1,3 +1,7 @@
+body.rustdoc {
+  --code-background: var(--code-block-background-color);
+}
+
 :target {
   display: block;
 }
@@ -7,8 +11,6 @@
 }
 
 .docblock {
-  --code-background: var(--code-block-background-color);
-
   pre > button {
     display: none;
   }

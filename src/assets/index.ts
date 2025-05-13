@@ -63,7 +63,7 @@ async function performSearch(query: string, signal: AbortSignal, index: Document
   results.loading = false;
   results.project = vars.dataset.currentCrate!;
   results.query = query;
-  results.items = items.map((x) => x.doc).filter((x) => x !== null);
+  results.items = items.map((x) => x.doc).filter((x) => x !== null && x !== undefined);
 }
 
 @customElement('oxide-search-results')

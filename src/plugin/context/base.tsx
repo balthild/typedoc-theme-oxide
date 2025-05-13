@@ -1,4 +1,6 @@
 import {
+  ContainerReflection,
+  DeclarationReflection,
   DefaultTheme,
   DefaultThemeRenderContext,
   Options,
@@ -7,6 +9,7 @@ import {
   ReflectionCategory,
   ReflectionGroup,
   Router,
+  SignatureReflection,
 } from 'typedoc';
 
 import { itemLink, itemSlug, ReflectionWithLink, sectionSlug, transformTypography } from './utils';
@@ -37,5 +40,13 @@ export class OxideContextBase extends DefaultThemeRenderContext {
 
   protected itemLink(item: ReflectionWithLink, forceNested: boolean) {
     return itemLink(this, item, forceNested);
+  }
+
+  protected itemSourceLink(item: Reflection) {
+    if (!item.isDeclaration() && !item.isSignature()) {
+      return;
+    }
+
+    return item.sources?.map((src) => src.url).find((url) => url);
   }
 }

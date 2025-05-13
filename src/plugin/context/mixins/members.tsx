@@ -18,6 +18,13 @@ import { breakable, isNestedTable, join, partition, ReflectionWithLink, transfor
 export const MembersMixin = (base: typeof OxideContextBase) =>
   class extends base {
     members = (model: ContainerReflection) => {
+      // Workaround for `this.reflectionPreview`
+      if (model.isDeclaration() && model.indexSignatures) {
+        model.children ??= [];
+      }
+
+      const preview = this.reflectionPreview(model);
+
       const [tables1, categories] = partition(model.categories ?? [], isNestedTable);
       const [tables2, groups] = partition(model.groups ?? [], isNestedTable);
 
@@ -28,6 +35,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
 
       return (
         <>
+          {preview && <pre class="item-decl"><code>{removeLinks(transformTokens(preview))}</code></pre>}
           {modules.map((x) => this.__members_table(x, true))}
           {categories.map((x) => this.__members_category(x))}
           {groups.map((x) => this.__members_group(x))}
@@ -173,9 +181,9 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
       }
     }
 
-    private __members_detailSignature(decl: SignatureReflection) {
-      const anchor = this.slugger.slug(`signature ${decl.name}`);
-      const source = this.__members_source(decl);
+    private __members_detailSignature(signature: SignatureReflection) {
+      const anchor = this.slugger.slug(`signature ${signature.name}`);
+      const source = this.__members_source(signature);
 
       return (
         <details class="toggle method-toggle" open>
@@ -185,14 +193,14 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
               <a href={`#${anchor}`} class="anchor">§</a>
 
               <h4 class="code-header">
-                {transformTokens(this.memberSignatureTitle(decl))}
+                {transformTokens(this.memberSignatureTitle(signature))}
               </h4>
             </section>
           </summary>
 
           <div class="docblock">
-            {this.commentSummary(decl)}
-            {this.commentTags(decl)}
+            {this.commentSummary(signature)}
+            {this.commentTags(signature)}
           </div>
         </details>
       );
@@ -265,14 +273,14 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
     }
 
     private __members_source(decl: DeclarationReflection | SignatureReflection) {
-      const url = decl.sources?.map((src) => src.url).find((url) => url);
+      const url = this.itemSourceLink(decl);
       if (!url) {
         return;
       }
 
       return (
         <span class="rightside">
-          <a class="src" href={url}>source</a>
+          <a class="src" href={url}>Source</a>
         </span>
       );
     }
@@ -324,6 +332,20 @@ export function itemTypeLinkClass(item: ReflectionWithLink): string {
     default:
       return 'foreigntype';
   }
+}
+
+function removeLinks(children: JSX.Children) {
+  return transformElement(children, (element) => {
+    if (element.tag === 'a') {
+      element.tag = 'span';
+      if (element.props) {
+        // @ts-ignore
+        delete element.props.href;
+      }
+    }
+
+    return element;
+  });
 }
 
 function transformTokens(children: JSX.Children) {

@@ -6,6 +6,7 @@ export const ContainerMixin = (base: typeof OxideContextBase) =>
   class extends base {
     reflectionTemplate = (page: PageEvent<ContainerReflection>) => {
       const { model } = page;
+      const source = this.itemSourceLink(model);
 
       return (
         <>
@@ -17,7 +18,14 @@ export const ContainerMixin = (base: typeof OxideContextBase) =>
               {ReflectionKind.singularString(model.kind)} <span>{model.name}</span>
               <button id="copy-path" title="Copy item path to clipboard">Copy item path</button>
             </h1>
+
             <rustdoc-toolbar />
+
+            {source && (
+              <span class="sub-heading">
+                <a class="src" href={source}>Source</a>
+              </span>
+            )}
           </div>
 
           {model.hasComment() && (
