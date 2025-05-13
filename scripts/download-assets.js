@@ -60,6 +60,21 @@ async function downloadMainJs() {
     'function sendSearchForm() { return;',
   );
 
+  // source = source.replace(
+  //   'titleElement.textContent.replace(" - Rust", "")',
+  //   'titleElement.textContent.replace(/ - .+$/, "")',
+  // );
+
+  source = source.replace(
+    'const [item, module] = document.title.split(" in ");',
+    'const [item, module] = document.title.split(" - ")[0].split(" in ");',
+  );
+
+  source = source.replace(
+    'copyContentToClipboard(path.join("::"));',
+    'copyContentToClipboard(path.join("."));',
+  );
+
   source = [
     `/**`,
     ` * Minified with terser.`,

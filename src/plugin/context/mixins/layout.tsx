@@ -33,7 +33,15 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
     private __layout_head(page: PageEvent<Reflection>) {
       const model = page.model;
       const project = page.project;
-      const title = model.name === project.name ? project.name : `${model.name} | ${project.name}`;
+
+      let title = model.name;
+      const parent = model.parent?.getFriendlyFullName();
+      if (parent) {
+        title = `${title} in ${parent}`;
+      }
+      if (model.name !== project.name) {
+        title = `${title} - ${project.name}`;
+      }
 
       const fonts = [
         'fonts/SourceSerif4-Regular.ttf.woff2',
