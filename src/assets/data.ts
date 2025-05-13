@@ -12,7 +12,7 @@ export async function loadSearchIndex() {
   const index = createSearchDocument();
 
   const base = `${document.documentElement.dataset.base}assets/oxide`;
-  const parts = await loadDeflateData(`${base}/search-index.defalte`);
+  const parts = await loadDeflateData(`${base}/search-index.deflate`);
   for (const [key, data] of Object.entries(parts)) {
     index.import(key, data as any);
   }

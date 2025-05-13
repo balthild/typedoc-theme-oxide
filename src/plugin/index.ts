@@ -44,7 +44,7 @@ export function load(app: Application) {
             name: item.name,
             comment: renderTextComment(item),
             kind: item.kind,
-            parent: item.parent?.isProject() ? '' : item.parent?.getFullName() ?? '',
+            parent: item.parent?.isProject() ? '' : item.parent?.getFriendlyFullName() ?? '',
             url: itemLink(app.renderer.router!, item, false),
           });
         } catch {}
@@ -65,7 +65,7 @@ export function load(app: Application) {
 
     const dest = path.join(event.outputDirectory, 'assets', 'oxide');
     await fs.mkdir(dest, { recursive: true });
-    await fs.writeFile(path.join(dest, 'search-index.defalte'), buffer);
+    await fs.writeFile(path.join(dest, 'search-index.deflate'), buffer);
   });
 
   app.renderer.postRenderAsyncJobs.push(async (event: RendererEvent) => {
