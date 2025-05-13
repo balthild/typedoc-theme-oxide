@@ -1,6 +1,7 @@
 import { ContainerReflection, JSX, PageEvent, Reflection, ReflectionKind } from 'typedoc';
 
 import { OxideContextBase } from '../base';
+import { join } from '../utils';
 
 export const ContainerMixin = (base: typeof OxideContextBase) =>
   class extends base {
@@ -15,7 +16,10 @@ export const ContainerMixin = (base: typeof OxideContextBase) =>
               {this.__container_breadcrumb(page.model.parent)}
             </div>
             <h1>
-              {ReflectionKind.singularString(model.kind)} <span>{model.name}</span>
+              {ReflectionKind.singularString(model.kind) + ' '}
+              <span>{model.name}</span>
+              {this.__container_generics(model)}
+
               <button id="copy-path" title="Copy item path to clipboard">Copy item path</button>
             </h1>
 
@@ -61,5 +65,17 @@ export const ContainerMixin = (base: typeof OxideContextBase) =>
       }
 
       return this.__container_breadcrumb(model.parent, false).concat(trail);
+    }
+
+    private __container_generics(model: Reflection) {
+      if (!model.isDeclaration() && !model.isSignature()) {
+        return;
+      }
+
+      if (!model.typeParameters) {
+        return;
+      }
+
+      return ['<', join(', ', model.typeParameters.map((x) => x.name)), '>'];
     }
   };
