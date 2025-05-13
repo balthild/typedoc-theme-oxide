@@ -21,7 +21,7 @@ rustdoc-toolbar #help-button {
     width: 100%;
   }
 
-  .infos {
+  .infos, .top, .bottom {
     display: none;
   }
 }
