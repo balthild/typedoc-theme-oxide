@@ -215,11 +215,30 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
       const anchor = this.slugger.slug(`declaration ${decl.name}`);
       const source = this.__members_source(decl);
 
-      let prefix;
+      let prefix = [];
       if (decl.kindOf(ReflectionKind.SomeType)) {
-        prefix = 'type ';
+        prefix.push('type');
       } else if (decl.kindOf(ReflectionKind.SomeValue)) {
-        prefix = decl.flags.hasFlag(ReflectionFlag.Const) ? 'const ' : 'let ';
+        prefix.push(decl.flags.isConst ? 'const' : 'let');
+      } else if (decl.kindOf(ReflectionKind.ClassMember)) {
+        if (decl.flags.isPrivate) {
+          prefix.push('private');
+        }
+        if (decl.flags.isProtected) {
+          prefix.push('protected');
+        }
+        if (decl.flags.isPublic) {
+          prefix.push('public');
+        }
+        if (decl.flags.isAbstract) {
+          prefix.push('abstract');
+        }
+        if (decl.flags.isStatic) {
+          prefix.push('static');
+        }
+        if (decl.flags.isReadonly) {
+          prefix.push('readonly');
+        }
       }
 
       let delimeter;
@@ -244,7 +263,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
               <a href={`#${anchor}`} class="anchor">§</a>
 
               <h4 class="code-header">
-                <span class="struct">{prefix}</span>
+                {prefix.length && <span class="struct">{prefix.join(' ')}{' '}</span>}
 
                 {breakable(decl.name)}
                 {transformTokens(this.__members_type_params(decl.typeParameters))}
