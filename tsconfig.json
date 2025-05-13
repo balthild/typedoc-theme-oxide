@@ -1,8 +1,8 @@
 {
   "include": ["src"],
   "compilerOptions": {
-    "target": "es2018",
-    "module": "esnext",
+    "target": "es2022",
+    "module": "preserve",
     "moduleResolution": "bundler",
     "esModuleInterop": true,
     "skipLibCheck": true,

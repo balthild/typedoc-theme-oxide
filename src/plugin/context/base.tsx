@@ -1,6 +1,4 @@
 import {
-  ContainerReflection,
-  DeclarationReflection,
   DefaultTheme,
   DefaultThemeRenderContext,
   Options,
@@ -9,7 +7,6 @@ import {
   ReflectionCategory,
   ReflectionGroup,
   Router,
-  SignatureReflection,
 } from 'typedoc';
 
 import { itemLink, itemSlug, ReflectionWithLink, sectionSlug, transformTypography } from './utils';
@@ -20,14 +17,6 @@ export class OxideContextBase extends DefaultThemeRenderContext {
 
     const markdown = this.markdown;
     this.markdown = (text) => transformTypography(markdown(text) ?? '');
-  }
-
-  protected logo() {
-    return this.relativeURL('assets/oxide/logo.svg') ?? '';
-  }
-
-  protected rustdocAsset(path: string): string {
-    return `https://cdn.jsdelivr.net/gh/rust-lang/rust@1.86.0/src/librustdoc/html/static/${path}`;
   }
 
   protected sectionSlug(section: ReflectionGroup | ReflectionCategory) {

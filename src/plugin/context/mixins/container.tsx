@@ -12,20 +12,20 @@ export const ContainerMixin = (base: typeof OxideContextBase) =>
         <>
           <div class="main-heading">
             <div class="rustdoc-breadcrumbs">
-              {this.__container_breadcrumbs(page.model.parent)}
+              {this.#breadcrumbs(page.model.parent)}
             </div>
 
             <h1>
               {ReflectionKind.singularString(model.kind) + ' '}
               <span>{model.name}</span>
-              {this.__container_generics(model)}
+              {this.#generics(model)}
 
               <button id="copy-path" title="Copy item path to clipboard">Copy item path</button>
             </h1>
 
             <rustdoc-toolbar />
 
-            {this.__container_source(model)}
+            {this.#source(model)}
           </div>
 
           {model.hasComment() && (
@@ -45,24 +45,24 @@ export const ContainerMixin = (base: typeof OxideContextBase) =>
       );
     };
 
-    private __container_breadcrumbs(model?: Reflection): JSX.Children[] {
+    #breadcrumbs(model?: Reflection): JSX.Children[] {
       if (!model || model.isProject()) {
         return [];
       }
 
       if (model.kindOf(ReflectionKind.SomeSignature)) {
-        return this.__container_breadcrumbs(model.parent);
+        return this.#breadcrumbs(model.parent);
       }
 
       const trail = [
-        ...this.__container_breadcrumbs(model.parent),
+        ...this.#breadcrumbs(model.parent),
         <a href={this.urlTo(model)}>{model.name}</a>,
       ];
 
       return join(['.', <wbr />], trail);
     }
 
-    private __container_generics(model: Reflection) {
+    #generics(model: Reflection) {
       if (!model.isDeclaration() && !model.isSignature()) {
         return;
       }
@@ -74,7 +74,7 @@ export const ContainerMixin = (base: typeof OxideContextBase) =>
       return ['<', join(', ', model.typeParameters.map((x) => x.name)), '>'];
     }
 
-    private __container_source(model: Reflection) {
+    #source(model: Reflection) {
       const url = this.itemSourceLink(model);
       if (!url) {
         return;

@@ -9,7 +9,7 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
     defaultLayout = (template: Template, page: PageEvent<Reflection>) => {
       return (
         <html lang={this.options.getValue('lang')} data-base={this.relativeURL('./')}>
-          {this.__layout_head(page)}
+          {this.#head(page)}
 
           <body class="rustdoc">
             <JSX.Raw html="<!--[if lte IE 11]>" />
@@ -20,9 +20,9 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
 
             {this.hook('body.begin', this)}
 
-            {this.__layout_topbar(page)}
-            {this.__layout_sidebar(page)}
-            {this.__layout_main(template, page)}
+            {this.#topbar(page)}
+            {this.#sidebar(page)}
+            {this.#main(template, page)}
 
             {this.hook('body.end', this)}
           </body>
@@ -30,7 +30,7 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
       );
     };
 
-    private __layout_head(page: PageEvent<Reflection>) {
+    #head(page: PageEvent<Reflection>) {
       const model = page.model;
       const project = page.project;
 
@@ -67,11 +67,11 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
               as="font"
               type="font/woff2"
               crossOrigin="anonymous"
-              href={this.rustdocAsset(font)}
+              href={rustdocAsset(font)}
             />
           ))}
 
-          <link rel="stylesheet" type="text/css" href={this.rustdocAsset('css/normalize.min.css')} />
+          <link rel="stylesheet" type="text/css" href={rustdocAsset('css/normalize.min.css')} />
           <link
             rel="stylesheet"
             type="text/css"
@@ -91,10 +91,10 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
             data-settings-js="settings.js"
           />
 
-          <script src={this.rustdocAsset('js/storage.min.js')}></script>
+          <script src={rustdocAsset('js/storage.min.js')}></script>
           <script defer src={this.relativeURL('assets/oxide/rustdoc/main.js')}></script>
           <noscript>
-            <link rel="stylesheet" href={this.rustdocAsset('css/noscript.min.css')} />
+            <link rel="stylesheet" href={rustdocAsset('css/noscript.min.css')} />
           </noscript>
 
           <link rel="stylesheet" href={this.relativeURL('assets/highlight.css')} />
@@ -107,7 +107,7 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
       );
     }
 
-    private __layout_topbar(page: PageEvent<Reflection>) {
+    #topbar(page: PageEvent<Reflection>) {
       const { project } = page;
 
       return (
@@ -120,7 +120,7 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
       );
     }
 
-    private __layout_sidebar(page: PageEvent<Reflection>) {
+    #sidebar(page: PageEvent<Reflection>) {
       const { project } = page;
 
       return (
@@ -142,7 +142,7 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
       );
     }
 
-    private __layout_main(template: Template, page: PageEvent<Reflection>) {
+    #main(template: Template, page: PageEvent<Reflection>) {
       return (
         <main>
           <div class="width-limiter">
@@ -162,3 +162,7 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
       );
     }
   };
+
+function rustdocAsset(path: string) {
+  return `https://cdn.jsdelivr.net/gh/rust-lang/rust@1.86.0/src/librustdoc/html/static/${path}`;
+}

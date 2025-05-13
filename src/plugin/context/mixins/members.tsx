@@ -5,7 +5,6 @@ import {
   JSX,
   ReferenceReflection,
   ReflectionCategory,
-  ReflectionFlag,
   ReflectionGroup,
   ReflectionKind,
   SignatureReflection,
@@ -36,27 +35,27 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
       return (
         <>
           {preview && <pre class="item-decl"><code>{removeLinks(transformTokens(preview))}</code></pre>}
-          {modules.map((x) => this.__members_table(x, true))}
-          {categories.map((x) => this.__members_category(x))}
-          {groups.map((x) => this.__members_group(x))}
-          {tables.map((x) => this.__members_table(x, true))}
+          {modules.map((x) => this.#table(x, true))}
+          {categories.map((x) => this.#category(x))}
+          {groups.map((x) => this.#group(x))}
+          {tables.map((x) => this.#table(x, true))}
         </>
       );
     };
 
-    private __members_category(category: ReflectionCategory) {
-      return this.__members_section(category);
+    #category(category: ReflectionCategory) {
+      return this.#section(category);
     }
 
-    private __members_group(group: ReflectionGroup) {
+    #group(group: ReflectionGroup) {
       if (group.categories) {
-        return group.categories.map((x) => this.__members_category(x));
+        return group.categories.map((x) => this.#category(x));
       }
 
-      return this.__members_section(group);
+      return this.#section(group);
     }
 
-    private __members_section(section: ReflectionCategory | ReflectionGroup) {
+    #section(section: ReflectionCategory | ReflectionGroup) {
       const anchor = this.sectionSlug(section);
       const classes = {
         [ReflectionKind.Enum]: 'variants',
@@ -70,13 +69,13 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
           </h2>
 
           <div class={classes[this.model.kind]}>
-            {section.children.map((item) => this.__members_item(item))}
+            {section.children.map((item) => this.#item(item))}
           </div>
         </>
       );
     }
 
-    protected __members_table = (section: ReflectionCategory | ReflectionGroup, forceNested: boolean) => {
+    #table = (section: ReflectionCategory | ReflectionGroup, forceNested: boolean) => {
       const anchor = this.sectionSlug(section);
 
       return (
@@ -108,24 +107,24 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
       );
     };
 
-    private __members_item(item: ReflectionWithLink) {
+    #item(item: ReflectionWithLink) {
       if (item instanceof DocumentReflection) {
-        return this.__members_doc(item);
+        return this.#doc(item);
       }
 
       if (item.kindOf(ReflectionKind.EnumMember)) {
-        return this.__members_enum_member(item);
+        return this.#enumMember(item);
       }
 
-      return this.__members_decl(item);
+      return this.#decl(item);
     }
 
-    private __members_doc(doc: DocumentReflection) {
+    #doc(doc: DocumentReflection) {
       console.log('DocumentReflection', doc.getFullName());
       debugger;
     }
 
-    private __members_enum_member(decl: DeclarationReflection) {
+    #enumMember(decl: DeclarationReflection) {
       const anchor = this.itemSlug(decl);
 
       return (
@@ -142,9 +141,9 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
       );
     }
 
-    private __members_decl(decl: DeclarationReflection) {
+    #decl(decl: DeclarationReflection) {
       const anchor = this.itemSlug(decl);
-      const source = this.__members_source(decl);
+      const source = this.#source(decl);
 
       return (
         <details class="toggle implementors-toggle" open>
@@ -156,34 +155,34 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
             </section>
           </summary>
           <div class="impl-items">
-            {this.__members_detail(decl)}
+            {this.#detail(decl)}
           </div>
         </details>
       );
     }
 
-    private __members_detail(decl: DeclarationReflection) {
+    #detail(decl: DeclarationReflection) {
       if (decl.signatures?.length) {
         // methods
-        return decl.signatures?.map((x) => this.__members_detailSignature(x));
+        return decl.signatures?.map((x) => this.#detailSignature(x));
       } else if (decl.hasGetterOrSetter()) {
         // accessors
         return [
-          decl.getSignature && this.__members_detailSignature(decl.getSignature),
-          decl.setSignature && this.__members_detailSignature(decl.setSignature),
+          decl.getSignature && this.#detailSignature(decl.getSignature),
+          decl.setSignature && this.#detailSignature(decl.setSignature),
         ];
       } else if (decl instanceof ReferenceReflection) {
         // what is this?
-        return this.__members_detailReference(decl);
+        return this.#detailReference(decl);
       } else {
         // type aliases, variables, fields
-        return this.__members_detailOther(decl);
+        return this.#detailOther(decl);
       }
     }
 
-    private __members_detailSignature(signature: SignatureReflection) {
+    #detailSignature(signature: SignatureReflection) {
       const anchor = this.slugger.slug(`signature ${signature.name}`);
-      const source = this.__members_source(signature);
+      const source = this.#source(signature);
 
       return (
         <details class="toggle method-toggle" open>
@@ -206,14 +205,14 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
       );
     }
 
-    private __members_detailReference(decl: ReferenceReflection) {
+    #detailReference(decl: ReferenceReflection) {
       console.log('ReferenceReflection', decl.getFullName());
       debugger;
     }
 
-    private __members_detailOther(decl: DeclarationReflection) {
+    #detailOther(decl: DeclarationReflection) {
       const anchor = this.slugger.slug(`declaration ${decl.name}`);
-      const source = this.__members_source(decl);
+      const source = this.#source(decl);
 
       let prefix = [];
       if (decl.kindOf(ReflectionKind.SomeType)) {
@@ -266,7 +265,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
                 {prefix.length && <span class="struct">{prefix.join(' ')}{' '}</span>}
 
                 {breakable(decl.name)}
-                {transformTokens(this.__members_type_params(decl.typeParameters))}
+                {transformTokens(this.#generics(decl.typeParameters))}
 
                 {decl.type && [
                   delimeter,
@@ -291,7 +290,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
       );
     }
 
-    private __members_source(decl: DeclarationReflection | SignatureReflection) {
+    #source(decl: DeclarationReflection | SignatureReflection) {
       const url = this.itemSourceLink(decl);
       if (!url) {
         return;
@@ -304,7 +303,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
       );
     }
 
-    protected __members_type_params(params?: TypeParameterReflection[]) {
+    #generics(params?: TypeParameterReflection[]) {
       if (!params?.length) {
         return;
       }

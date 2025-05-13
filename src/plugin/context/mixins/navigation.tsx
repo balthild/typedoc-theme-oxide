@@ -25,14 +25,14 @@ export const NavigationMixin = (base: typeof OxideContextBase) =>
               </li>
             </ul>
 
-            {this.__navigation_modules(model)}
-            {this.__navigation_sections(model)}
+            {this.#modules(model)}
+            {this.#sections(model)}
           </div>
         </>
       );
     };
 
-    private __navigation_modules(model: Reflection) {
+    #modules(model: Reflection) {
       const parent = model.parent;
       const modules = parent instanceof ContainerReflection
         ? parent.getChildrenByKind(ReflectionKind.SomeModule)
@@ -63,7 +63,7 @@ export const NavigationMixin = (base: typeof OxideContextBase) =>
       );
     }
 
-    private __navigation_sections(model: Reflection) {
+    #sections(model: Reflection) {
       if (model instanceof ContainerReflection === false) {
         return;
       }
@@ -77,26 +77,26 @@ export const NavigationMixin = (base: typeof OxideContextBase) =>
       );
 
       return [
-        modules.map((x) => this.__navigation_table(x, true)),
-        categories.map((x) => this.__navigation_category(x)),
-        groups.map((x) => this.__navigation_group(x)),
-        tables.map((x) => this.__navigation_table(x, true)),
+        modules.map((x) => this.#table(x, true)),
+        categories.map((x) => this.#category(x)),
+        groups.map((x) => this.#group(x)),
+        tables.map((x) => this.#table(x, true)),
       ];
     }
 
-    private __navigation_category(category: ReflectionCategory) {
-      return this.__navigation_table(category, false);
+    #category(category: ReflectionCategory) {
+      return this.#table(category, false);
     }
 
-    private __navigation_group(group: ReflectionGroup) {
+    #group(group: ReflectionGroup) {
       if (group.categories) {
-        return group.categories.map((x) => this.__navigation_category(x));
+        return group.categories.map((x) => this.#category(x));
       }
 
-      return this.__navigation_table(group, false);
+      return this.#table(group, false);
     }
 
-    private __navigation_table(table: ReflectionCategory | ReflectionGroup, nested: boolean) {
+    #table(table: ReflectionCategory | ReflectionGroup, nested: boolean) {
       const anchor = this.sectionSlug(table);
 
       return (
@@ -105,13 +105,13 @@ export const NavigationMixin = (base: typeof OxideContextBase) =>
             <a href={`#${anchor}`}>{table.title}</a>
           </h3>
           <ul class="block">
-            {table.children.map((x) => this.__navigation_item(x, nested))}
+            {table.children.map((x) => this.#item(x, nested))}
           </ul>
         </>
       );
     }
 
-    private __navigation_item(item: ReflectionWithLink, forceNested: boolean) {
+    #item(item: ReflectionWithLink, forceNested: boolean) {
       return (
         <li class={this.getReflectionClasses(item)}>
           <a href={this.itemLink(item, forceNested)}>{item.name}</a>
