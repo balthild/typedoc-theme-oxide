@@ -106,15 +106,7 @@ class OxideSearchResults extends LitElement {
   render() {
     if (this.loading) {
       return html`
-        <div class="main-heading">
-          <h1 class="search-results-title">Results</h1>
-        </div>
-
-        <div id="results">
-          <div class="search-failed active">
-            Loading...
-          </div>
-        </div>
+        <h3 class="search-loading">Loading search results...</h3>
       `;
     }
 
