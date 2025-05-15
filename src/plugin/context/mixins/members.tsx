@@ -109,7 +109,14 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
 
     #section(section: ReflectionSection) {
       const anchor = this.sectionSlug(section);
-      const variants = section.children.every((x) => x.kindOf(ReflectionKind.EnumMember));
+
+      let classname = 'impl-items';
+      if (section.children.every((x) => x.kindOf(ReflectionKind.EnumMember))) {
+        classname = 'variants';
+      }
+      if (section.children.every((x) => x.kindOf(ReflectionKind.Property))) {
+        classname = '';
+      }
 
       return (
         <>
@@ -118,7 +125,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
             <a href={`#${anchor}`} class="anchor">§</a>
           </h2>
 
-          <div class={variants ? 'variants' : 'impl-items'}>
+          <div class={classname}>
             {section.children.map((item) => this.#item(item))}
           </div>
         </>
@@ -209,6 +216,22 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
     }
 
     #detail(decl: DeclarationReflection, anchor: string) {
+      if (decl.kindOf(ReflectionKind.Property)) {
+        return (
+          <>
+            <span id={anchor} class="structfield section-header">
+              <a href={`#${anchor}`} class="anchor field">§</a>
+              <code>{this.#definition(decl)}</code>
+            </span>
+
+            <div class="docblock">
+              {this.commentSummary(decl)}
+              {this.commentTags(decl)}
+            </div>
+          </>
+        );
+      }
+
       return (
         <details class="toggle method-toggle" open>
           <summary>
@@ -255,7 +278,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
           {transformHighlights(this.#modifier(decl))}
 
           {decl.kindOf(ReflectionKind.SomeMember)
-            ? <span class="property">{breakable(decl.name)}</span>
+            ? <span>{breakable(decl.name)}</span>
             : <a class={itemLinkClass(decl)} href={this.urlTo(decl)}>{breakable(decl.name)}</a>}
 
           {transformHighlights(this.#generics(decl.typeParameters))}
