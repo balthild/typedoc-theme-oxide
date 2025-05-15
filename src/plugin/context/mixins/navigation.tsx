@@ -9,7 +9,7 @@ import {
 } from 'typedoc';
 
 import { OxideContextBase } from '../base';
-import { isNestedTable, partition, ReflectionWithLink } from '../utils';
+import { isNestedTable, partition, ReflectionSection, ReflectionWithLink } from '../utils';
 
 export const NavigationMixin = (base: typeof OxideContextBase) =>
   class extends base {
@@ -34,27 +34,25 @@ export const NavigationMixin = (base: typeof OxideContextBase) =>
 
     #modules(model: Reflection) {
       const parent = model.parent;
-      const modules = parent instanceof ContainerReflection
-        ? parent.getChildrenByKind(ReflectionKind.SomeModule)
-        : [];
-
-      if (!parent || modules.length === 0) {
+      if (parent instanceof ContainerReflection === false) {
         return;
       }
+
+      const siblings = parent.getChildrenByKind(ReflectionKind.SomeModule);
 
       return (
         <section>
           <ul class="block">
-            <li>
-              <a href={this.urlTo(parent)}>{' . .'}</a>
+            <li class="parent-module">
+              <a href={this.urlTo(parent)}>..</a>
             </li>
 
-            {modules.map((module) => (
+            {siblings.map((sibling) => (
               <li>
                 <a
-                  href={this.urlTo(module)}
-                  class={isCurrentModule(module, model) ? 'current' : ''}>
-                  {module.name}
+                  href={this.urlTo(sibling)}
+                  class={sibling.id === model.id ? 'current' : ''}>
+                  {sibling.name}
                 </a>
               </li>
             ))}
@@ -96,16 +94,16 @@ export const NavigationMixin = (base: typeof OxideContextBase) =>
       return this.#table(group, false);
     }
 
-    #table(table: ReflectionCategory | ReflectionGroup, nested: boolean) {
-      const anchor = this.sectionSlug(table);
+    #table(section: ReflectionSection, forceNested: boolean) {
+      const anchor = this.sectionSlug(section);
 
       return (
         <>
           <h3>
-            <a href={`#${anchor}`}>{table.title}</a>
+            <a href={`#${anchor}`}>{section.title}</a>
           </h3>
           <ul class="block">
-            {table.children.map((x) => this.#item(x, nested))}
+            {section.children.map((x) => this.#item(x, forceNested))}
           </ul>
         </>
       );
@@ -119,7 +117,3 @@ export const NavigationMixin = (base: typeof OxideContextBase) =>
       );
     }
   };
-
-function isCurrentModule(module: Reflection, current: Reflection) {
-  return module.id === current.id || module.id === current.parent?.id;
-}

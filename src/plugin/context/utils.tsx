@@ -13,7 +13,11 @@ import {
   Router,
 } from 'typedoc';
 
-export function isNestedTable(section: ReflectionCategory | ReflectionGroup) {
+export type ReflectionSection = ReflectionGroup | ReflectionCategory;
+export type ReflectionWithLink = DeclarationReflection | DocumentReflection;
+export type URLFactory = Router | DefaultThemeRenderContext;
+
+export function isNestedTable(section: ReflectionSection) {
   return section.children.every(isNestedItem);
 }
 
@@ -103,41 +107,39 @@ export function partition<T>(items: T[], predicate: (_: T) => boolean): [T[], T[
   return [satisfied, unsatisfied];
 }
 
-export function sectionSlug(section: ReflectionGroup | ReflectionCategory) {
-  return slug(`section ${section.title}`);
-}
+export const getUrl = (factory: URLFactory, item: Reflection) => {
+  if (factory instanceof DefaultThemeRenderContext) {
+    return factory.urlTo(item)!;
+  }
 
-export type ReflectionWithLink = DeclarationReflection | DocumentReflection;
+  if (factory instanceof BaseRouter) {
+    return factory.getFullUrl(item);
+  }
+
+  throw new Error('Unknown URL factory type');
+};
+
+export function sectionSlug(section: ReflectionSection) {
+  const title = slug(section.title);
+  return `section.${title}`;
+}
 
 export function itemSlug(item: ReflectionWithLink) {
   const kind = ReflectionKind.classString(item.kind).replace('tsd-kind-', '');
-  return slug(`${kind} ${item.name}`);
+  const name = slug(item.name);
+  return `${kind}.${name}`;
 }
 
-export function itemLink(
-  factory: Router | DefaultThemeRenderContext,
-  item: ReflectionWithLink,
-  forceNested: boolean,
-) {
-  const getUrl = (item: Reflection) => {
-    if (factory instanceof DefaultThemeRenderContext) {
-      return factory.urlTo(item)!;
-    }
-    if (factory instanceof BaseRouter) {
-      return factory.getFullUrl(item);
-    }
-    throw new Error('Unknown URL factory type');
-  };
-
+export function itemLink(factory: URLFactory, item: ReflectionWithLink, forceNested: boolean) {
   if (forceNested || !item.parent || isNestedItem(item)) {
-    return getUrl(item);
+    return getUrl(factory, item);
   }
 
-  const url = getUrl(item.parent);
+  const url = getUrl(factory, item.parent);
   const anchor = itemSlug(item);
   if (typeof url !== 'undefined') {
     return `${url}#${anchor}`;
   }
 
-  return getUrl(item);
+  return getUrl(factory, item);
 }

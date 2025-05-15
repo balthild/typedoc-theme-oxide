@@ -31,15 +31,13 @@ export const LayoutMixin = (base: typeof OxideContextBase) =>
     };
 
     #head(page: PageEvent<Reflection>) {
-      const model = page.model;
-      const project = page.project;
+      const { model, project } = page;
 
       let title = model.name;
-      const parent = model.parent?.getFriendlyFullName();
-      if (parent) {
-        title = `${title} in ${parent}`;
+      if (model.parent && !model.parent.isProject()) {
+        title = `${title} in ${model.parent.getFriendlyFullName()}`;
       }
-      if (model.name !== project.name) {
+      if (!model.isProject()) {
         title = `${title} - ${project.name}`;
       }
 

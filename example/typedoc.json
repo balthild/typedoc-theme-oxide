@@ -1,5 +1,5 @@
 {
-	"entryPoints": ["monaco.d.ts"],
+	"entryPoints": ["../node_modules/monaco-editor/esm/vs/editor/editor.api.d.ts"],
 	"out": "./docs",
 	"plugin": ["../dist/plugin/index.js"],
 	"theme": "oxide",

@@ -10,7 +10,19 @@ body.rustdoc {
   display: none;
 }
 
+.sidebar-elems .block li.parent-module a {
+  letter-spacing: 0.1em;
+}
+
+.impl-items > .toggle > summary + .docblock:empty {
+  margin-bottom: -0.75em;
+}
+
 .docblock {
+  :last-child {
+    margin-bottom: 0;
+  }
+
   pre > button {
     display: none;
   }

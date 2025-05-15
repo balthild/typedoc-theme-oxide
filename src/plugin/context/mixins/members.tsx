@@ -3,7 +3,6 @@ import {
   DeclarationReflection,
   DocumentReflection,
   JSX,
-  ReferenceReflection,
   ReflectionCategory,
   ReflectionGroup,
   ReflectionKind,
@@ -12,70 +11,57 @@ import {
 } from 'typedoc';
 
 import { OxideContextBase } from '../base';
-import { breakable, isNestedTable, join, partition, ReflectionWithLink, transformElement } from '../utils';
+import {
+  breakable,
+  isNestedTable,
+  join,
+  partition,
+  ReflectionSection,
+  ReflectionWithLink,
+  transformElement,
+} from '../utils';
 
 export const MembersMixin = (base: typeof OxideContextBase) =>
   class extends base {
     members = (model: ContainerReflection) => {
+      const [nested1, categories] = partition(model.categories ?? [], isNestedTable);
+      const [nested2, groups] = partition(model.groups ?? [], isNestedTable);
+
+      const [modules, tables] = partition(
+        [...nested1, ...nested2],
+        (x) => x.children.every((x) => x.kindOf(ReflectionKind.ExportContainer)),
+      );
+
+      const sections = [
+        ...categories,
+        ...groups.flatMap((x) => x.categories ?? [x] as ReflectionSection[]),
+      ];
+
+      return (
+        <>
+          {this.#preview(model)}
+          {modules.map((x) => this.#table(x, true))}
+          {sections.map((x) => this.#section(x))}
+          {tables.map((x) => this.#table(x, true))}
+        </>
+      );
+    };
+
+    #preview(model: ContainerReflection) {
       // Workaround for `this.reflectionPreview`
       if (model.isDeclaration() && model.indexSignatures) {
         model.children ??= [];
       }
 
       const preview = this.reflectionPreview(model);
-
-      const [tables1, categories] = partition(model.categories ?? [], isNestedTable);
-      const [tables2, groups] = partition(model.groups ?? [], isNestedTable);
-
-      const [modules, tables] = partition(
-        [...tables1, ...tables2],
-        (x) => x.children.every((x) => x.kindOf(ReflectionKind.ExportContainer)),
-      );
-
-      return (
-        <>
-          {preview && <pre class="item-decl"><code>{removeLinks(transformTokens(preview))}</code></pre>}
-          {modules.map((x) => this.#table(x, true))}
-          {categories.map((x) => this.#category(x))}
-          {groups.map((x) => this.#group(x))}
-          {tables.map((x) => this.#table(x, true))}
-        </>
-      );
-    };
-
-    #category(category: ReflectionCategory) {
-      return this.#section(category);
-    }
-
-    #group(group: ReflectionGroup) {
-      if (group.categories) {
-        return group.categories.map((x) => this.#category(x));
+      if (!preview) {
+        return;
       }
 
-      return this.#section(group);
+      return <pre class="item-decl"><code>{removeLinks(transformTokens(preview))}</code></pre>;
     }
 
-    #section(section: ReflectionCategory | ReflectionGroup) {
-      const anchor = this.sectionSlug(section);
-      const classes = {
-        [ReflectionKind.Enum]: 'variants',
-      } as Record<ReflectionKind, string>;
-
-      return (
-        <>
-          <h2 id={anchor} class="section-header">
-            {section.title}
-            <a href={`#${anchor}`} class="anchor">§</a>
-          </h2>
-
-          <div class={classes[this.model.kind]}>
-            {section.children.map((item) => this.#item(item))}
-          </div>
-        </>
-      );
-    }
-
-    #table = (section: ReflectionCategory | ReflectionGroup, forceNested: boolean) => {
+    #table = (section: ReflectionSection, forceNested: boolean) => {
       const anchor = this.sectionSlug(section);
 
       return (
@@ -107,13 +93,31 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
       );
     };
 
+    #section(section: ReflectionSection) {
+      const anchor = this.sectionSlug(section);
+      const variants = section.children.every((x) => x.kindOf(ReflectionKind.EnumMember));
+
+      return (
+        <>
+          <h2 id={anchor} class="section-header">
+            {section.title}
+            <a href={`#${anchor}`} class="anchor">§</a>
+          </h2>
+
+          <div class={variants ? 'variants' : 'impl-items'}>
+            {section.children.map((item) => this.#item(item))}
+          </div>
+        </>
+      );
+    }
+
     #item(item: ReflectionWithLink) {
       if (item instanceof DocumentReflection) {
         return this.#doc(item);
       }
 
       if (item.kindOf(ReflectionKind.EnumMember)) {
-        return this.#enumMember(item);
+        return this.#variant(item);
       }
 
       return this.#decl(item);
@@ -124,7 +128,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
       debugger;
     }
 
-    #enumMember(decl: DeclarationReflection) {
+    #variant(decl: DeclarationReflection) {
       const anchor = this.itemSlug(decl);
 
       return (
@@ -133,6 +137,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
             <a href={`#${anchor}`} class="anchor">§</a>
             <h3 class="code-header">{decl.name} = {transformTokens(this.type(decl.type))}</h3>
           </section>
+
           <div class="docblock">
             {this.commentSummary(decl)}
             {this.commentTags(decl)}
@@ -143,53 +148,37 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
 
     #decl(decl: DeclarationReflection) {
       const anchor = this.itemSlug(decl);
-      const source = this.#source(decl);
 
-      return (
-        <details class="toggle implementors-toggle" open>
-          <summary>
-            <section id={anchor} class="impl">
-              {source}
-              <a href={`#${anchor}`} class="anchor">§</a>
-              <h3 class="code-header">{decl.name}</h3>
-            </section>
-          </summary>
-          <div class="impl-items">
-            {this.#detail(decl)}
-          </div>
-        </details>
-      );
-    }
-
-    #detail(decl: DeclarationReflection) {
       if (decl.signatures?.length) {
         // methods
-        return decl.signatures?.map((x) => this.#detailSignature(x));
-      } else if (decl.hasGetterOrSetter()) {
-        // accessors
-        return [
-          decl.getSignature && this.#detailSignature(decl.getSignature),
-          decl.setSignature && this.#detailSignature(decl.setSignature),
-        ];
-      } else if (decl instanceof ReferenceReflection) {
-        // what is this?
-        return this.#detailReference(decl);
-      } else {
-        // type aliases, variables, fields
-        return this.#detailOther(decl);
+        return decl.signatures?.map((x, i) =>
+          i === 0
+            ? this.#signature(x, anchor)
+            : this.#signature(x, `${anchor}-${i}`)
+        );
       }
+
+      if (decl.hasGetterOrSetter()) {
+        // accessors
+        const signatures = [decl.getSignature, decl.setSignature].filter((x) => x != undefined);
+        return signatures.map((x, i) =>
+          i === 0
+            ? this.#signature(x, anchor)
+            : this.#signature(x, `${anchor}-${i}`)
+        );
+      }
+
+      // type aliases, variables, fields
+      return this.#detail(decl, anchor);
     }
 
-    #detailSignature(signature: SignatureReflection) {
-      const anchor = this.slugger.slug(`signature ${signature.name}`);
-      const source = this.#source(signature);
-
+    #signature(signature: SignatureReflection, anchor: string) {
       return (
         <details class="toggle method-toggle" open>
           <summary>
-            <section id={anchor} class="method">
-              {source}
-              <a href={`#${anchor}`} class="anchor">§</a>
+            <section id={anchor} class="method trait-impl">
+              {this.#source(signature)}
+              <a href={anchor && `#${anchor}`} class="anchor">§</a>
 
               <h4 class="code-header">
                 {transformTokens(this.memberSignatureTitle(signature))}
@@ -205,41 +194,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
       );
     }
 
-    #detailReference(decl: ReferenceReflection) {
-      console.log('ReferenceReflection', decl.getFullName());
-      debugger;
-    }
-
-    #detailOther(decl: DeclarationReflection) {
-      const anchor = this.slugger.slug(`declaration ${decl.name}`);
-      const source = this.#source(decl);
-
-      let prefix = [];
-      if (decl.kindOf(ReflectionKind.SomeType)) {
-        prefix.push('type');
-      } else if (decl.kindOf(ReflectionKind.SomeValue)) {
-        prefix.push(decl.flags.isConst ? 'const' : 'let');
-      } else if (decl.kindOf(ReflectionKind.ClassMember)) {
-        if (decl.flags.isPrivate) {
-          prefix.push('private');
-        }
-        if (decl.flags.isProtected) {
-          prefix.push('protected');
-        }
-        if (decl.flags.isPublic) {
-          prefix.push('public');
-        }
-        if (decl.flags.isAbstract) {
-          prefix.push('abstract');
-        }
-        if (decl.flags.isStatic) {
-          prefix.push('static');
-        }
-        if (decl.flags.isReadonly) {
-          prefix.push('readonly');
-        }
-      }
-
+    #detail(decl: DeclarationReflection, anchor: string) {
       let delimeter;
       if (decl.kindOf(ReflectionKind.SomeType)) {
         delimeter = ' = ';
@@ -257,12 +212,12 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
       return (
         <details class="toggle method-toggle" open>
           <summary>
-            <section id={anchor} class="method">
-              {source}
+            <section id={anchor} class="method trait-impl">
+              {this.#source(decl)}
               <a href={`#${anchor}`} class="anchor">§</a>
 
               <h4 class="code-header">
-                {prefix.length && <span class="struct">{prefix.join(' ')}{' '}</span>}
+                {this.#modifier(decl)}
 
                 {breakable(decl.name)}
                 {transformTokens(this.#generics(decl.typeParameters))}
@@ -288,6 +243,41 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
           </div>
         </details>
       );
+    }
+
+    #modifier(decl: DeclarationReflection) {
+      let modifier = [];
+
+      if (decl.kindOf(ReflectionKind.SomeType)) {
+        modifier.push('type');
+      } else if (decl.kindOf(ReflectionKind.SomeValue)) {
+        modifier.push(decl.flags.isConst ? 'const' : 'let');
+      } else if (decl.kindOf(ReflectionKind.ClassMember)) {
+        if (decl.flags.isPrivate) {
+          modifier.push('private');
+        }
+        if (decl.flags.isProtected) {
+          modifier.push('protected');
+        }
+        if (decl.flags.isPublic) {
+          modifier.push('public');
+        }
+        if (decl.flags.isAbstract) {
+          modifier.push('abstract');
+        }
+        if (decl.flags.isStatic) {
+          modifier.push('static');
+        }
+        if (decl.flags.isReadonly) {
+          modifier.push('readonly');
+        }
+      }
+
+      if (!modifier.length) {
+        return;
+      }
+
+      return <span class="struct">{modifier.join(' ')}{' '}</span>;
     }
 
     #source(decl: DeclarationReflection | SignatureReflection) {

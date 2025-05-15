@@ -1,15 +1,6 @@
-import {
-  DefaultTheme,
-  DefaultThemeRenderContext,
-  Options,
-  PageEvent,
-  Reflection,
-  ReflectionCategory,
-  ReflectionGroup,
-  Router,
-} from 'typedoc';
+import { DefaultTheme, DefaultThemeRenderContext, Options, PageEvent, Reflection, Router } from 'typedoc';
 
-import { itemLink, itemSlug, ReflectionWithLink, sectionSlug, transformTypography } from './utils';
+import { itemLink, itemSlug, ReflectionSection, ReflectionWithLink, sectionSlug, transformTypography } from './utils';
 
 export class OxideContextBase extends DefaultThemeRenderContext {
   constructor(router: Router, theme: DefaultTheme, page: PageEvent<Reflection>, options: Options) {
@@ -19,7 +10,7 @@ export class OxideContextBase extends DefaultThemeRenderContext {
     this.markdown = (text) => transformTypography(markdown(text) ?? '');
   }
 
-  protected sectionSlug(section: ReflectionGroup | ReflectionCategory) {
+  protected sectionSlug(section: ReflectionSection) {
     return sectionSlug(section);
   }
 
