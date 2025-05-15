@@ -1,5 +1,5 @@
 /**
- * Minified with clean-css. Relative urls are replaced with absolute urls of jsDelivr.
+ * Patched by typedoc-theme-oxide. Minified with clean-css.
  * Original file: https://cdn.jsdelivr.net/gh/rust-lang/rust@1.86.0/src/librustdoc/html/static/css/rustdoc.css
  */
 :root{--nav-sub-mobile-padding:8px;--search-typename-width:6.75rem;--desktop-sidebar-width:200px;--src-sidebar-width:300px;--desktop-sidebar-z-index:100;--sidebar-elems-left-padding:24px;--clipboard-image:url('data:image/svg+xml,<svg width="19" height="18" viewBox="0 0 24 25" \
