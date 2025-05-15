@@ -3,9 +3,8 @@ import {
   DeclarationReflection,
   DocumentReflection,
   JSX,
-  ReflectionCategory,
-  ReflectionGroup,
   ReflectionKind,
+  ReflectionType,
   SignatureReflection,
   TypeParameterReflection,
 } from 'typedoc';
@@ -13,6 +12,7 @@ import {
 import { OxideContextBase } from '../base';
 import {
   breakable,
+  isNestedItem,
   isNestedTable,
   join,
   partition,
@@ -47,18 +47,32 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
       );
     };
 
-    #preview(model: ContainerReflection) {
-      // Workaround for `this.reflectionPreview`
-      if (model.isDeclaration() && model.indexSignatures) {
-        model.children ??= [];
-      }
-
-      const preview = this.reflectionPreview(model);
-      if (!preview) {
+    #preview(decl: ContainerReflection) {
+      if (!decl.isDeclaration()) {
         return;
       }
 
-      return <pre class="item-decl"><code>{removeLinks(transformTokens(preview))}</code></pre>;
+      // Workaround for `this.reflectionPreview`
+      if (decl.indexSignatures) {
+        decl.children ??= [];
+      }
+
+      const preview = this.reflectionPreview(decl);
+      if (preview) {
+        return (
+          <pre class="item-decl">
+            <code>{removeLinks(transformHighlights(preview))}</code>
+          </pre>
+        );
+      }
+
+      if (!isNestedItem(decl)) {
+        return (
+          <pre class="item-decl">
+            <code>{this.#definition(decl, true)}</code>
+          </pre>
+        );
+      }
     }
 
     #table = (section: ReflectionSection, forceNested: boolean) => {
@@ -76,7 +90,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
               <>
                 <dt>
                   <a
-                    class={itemTypeLinkClass(item)}
+                    class={itemLinkClass(item)}
                     href={this.itemLink(item, forceNested)}
                     title={item.name}>
                     {item.name}
@@ -135,7 +149,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
         <>
           <section id={anchor} class="variant">
             <a href={`#${anchor}`} class="anchor">§</a>
-            <h3 class="code-header">{decl.name} = {transformTokens(this.type(decl.type))}</h3>
+            <h3 class="code-header">{decl.name} = {transformHighlights(this.type(decl.type))}</h3>
           </section>
 
           <div class="docblock">
@@ -181,7 +195,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
               <a href={anchor && `#${anchor}`} class="anchor">§</a>
 
               <h4 class="code-header">
-                {transformTokens(this.memberSignatureTitle(signature))}
+                {transformHighlights(this.memberSignatureTitle(signature))}
               </h4>
             </section>
           </summary>
@@ -195,20 +209,6 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
     }
 
     #detail(decl: DeclarationReflection, anchor: string) {
-      let delimeter;
-      if (decl.kindOf(ReflectionKind.SomeType)) {
-        delimeter = ' = ';
-      } else {
-        delimeter = decl.flags.isOptional ? '?: ' : ': ';
-      }
-
-      let value: JSX.Children = decl.defaultValue;
-      if (isStringNumberLiteral(value)) {
-        value = <span class="macro">{decl.defaultValue}</span>;
-      } else if (isPrimitiveType(value)) {
-        value = <span class="primitive">{decl.defaultValue}</span>;
-      }
-
       return (
         <details class="toggle method-toggle" open>
           <summary>
@@ -216,24 +216,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
               {this.#source(decl)}
               <a href={`#${anchor}`} class="anchor">§</a>
 
-              <h4 class="code-header">
-                {this.#modifier(decl)}
-
-                {breakable(decl.name)}
-                {transformTokens(this.#generics(decl.typeParameters))}
-
-                {decl.type && [
-                  delimeter,
-                  transformTokens(this.type(decl.type)),
-                ]}
-
-                {!decl.type && (decl.groups || decl.categories) && [
-                  delimeter,
-                  <a href={this.urlTo(decl)}>{decl.name}</a>,
-                ]}
-
-                {value && ` = ${value}`}
-              </h4>
+              <h4 class="code-header">{this.#definition(decl)}</h4>
             </section>
           </summary>
 
@@ -242,6 +225,47 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
             {this.commentTags(decl)}
           </div>
         </details>
+      );
+    }
+
+    #definition(decl: DeclarationReflection, full = false) {
+      let value: JSX.Children = decl.defaultValue;
+      if (isStringNumberLiteral(value)) {
+        value = <span class="macro">{decl.defaultValue}</span>;
+      } else if (isPrimitiveType(value)) {
+        value = <span class="primitive">{decl.defaultValue}</span>;
+      }
+
+      let delimeter;
+      if (decl.kindOf(ReflectionKind.SomeType)) {
+        delimeter = ' = ';
+      } else {
+        delimeter = decl.flags.isOptional ? '?: ' : ': ';
+      }
+
+      let type;
+      if (!full && decl.type instanceof ReflectionType) {
+        type = '{ ... }';
+      } else {
+        type = this.type(decl.type);
+      }
+
+      return (
+        <>
+          {transformHighlights(this.#modifier(decl))}
+
+          {decl.kindOf(ReflectionKind.SomeMember)
+            ? <span class="property">{breakable(decl.name)}</span>
+            : <a class={itemLinkClass(decl)} href={this.urlTo(decl)}>{breakable(decl.name)}</a>}
+
+          {transformHighlights(this.#generics(decl.typeParameters))}
+
+          {type
+            ? [delimeter, transformHighlights(type)]
+            : (decl.groups || decl.categories) && `${delimeter}{ ... }`}
+
+          {value}
+        </>
       );
     }
 
@@ -277,7 +301,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
         return;
       }
 
-      return <span class="struct">{modifier.join(' ')}{' '}</span>;
+      return <span class="tsd-signature-keyword">{modifier.join(' ')}{' '}</span>;
     }
 
     #source(decl: DeclarationReflection | SignatureReflection) {
@@ -320,7 +344,7 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
     }
   };
 
-export function itemTypeLinkClass(item: ReflectionWithLink): string {
+export function itemLinkClass(item: ReflectionWithLink): string {
   switch (item.kind) {
     case ReflectionKind.Module:
     case ReflectionKind.Namespace:
@@ -356,35 +380,52 @@ function removeLinks(children: JSX.Children) {
   });
 }
 
-function transformTokens(children: JSX.Children) {
+function transformHighlights(children: JSX.Children) {
   return transformElement(children, (element) => {
     const props = {
-      'class': undefined as string | undefined,
+      'class': '',
       'href': undefined as string | undefined,
       'data-tsd-kind': undefined as string | undefined,
       ...element.props,
     };
 
-    const classes = props.class?.trim().split(/\s+/) ?? [];
+    const classes = props.class.trim().split(/\s+/);
     if (classes.includes('tsd-signature-type')) {
-      const firstChild = element.children[0];
-      if (isStringNumberLiteral(firstChild)) {
+      if (isStringNumberLiteral(element.children[0])) {
         classes.push('macro');
-      } else if (isPrimitiveType(firstChild)) {
-        classes.push('primitive');
-      } else if (props['data-tsd-kind'] === 'Type Parameter' || classes.includes('tsd-kind-type-parameter')) {
+      } else if (isPrimitiveType(element.children[0])) {
+        classes.push('keyword');
+      } else if (props['data-tsd-kind'] === ReflectionKind.singularString(ReflectionKind.TypeParameter)) {
         classes.push('trait');
+      } else if (classes.includes('tsd-kind-type-parameter')) {
+        classes.push('trait');
+      } else if (classes.includes('tsd-kind-enum-member')) {
+        classes.push('constant');
       } else {
-        classes.push('associatedtype');
+        classes.push('type');
       }
     }
     if (classes.includes('tsd-signature-keyword')) {
-      classes.push('primitive');
+      // keywords in signature have no color in rustdoc
+      classes.push('token');
+    }
+    if (
+      classes.includes('tsd-kind-interface')
+      || classes.includes('tsd-kind-type-alias')
+      || classes.includes('tsd-kind-constructor-signature')
+    ) {
+      classes.push('type');
     }
     if (classes.includes('tsd-kind-type-parameter')) {
       classes.push('trait');
       element.tag = 'span';
       delete props.href;
+    }
+    if (classes.includes('tsd-kind-enum-member')) {
+      if (props.href) {
+        const [url, hash] = props.href.split('#');
+        props.href = `${url}#enum-member.${hash}`;
+      }
     }
     if (classes.includes('tsd-kind-call-signature')) {
       classes.push('method');

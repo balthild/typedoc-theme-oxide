@@ -2,16 +2,24 @@ body.rustdoc {
   --code-background: var(--code-block-background-color);
 }
 
+.sidebar-elems .block li.parent-module a {
+  letter-spacing: 0.1em;
+}
+
 :target {
   display: block;
 }
 
-.tsd-anchor-icon {
-  display: none;
+a.token, span.token {
+  color: var(--main-color);
 }
 
-.sidebar-elems .block li.parent-module a {
-  letter-spacing: 0.1em;
+a.property, span.property {
+  color: var(--code-highlight-kw-color);
+}
+
+.tsd-anchor-icon {
+  display: none;
 }
 
 .impl-items > .toggle > summary + .docblock:empty {
