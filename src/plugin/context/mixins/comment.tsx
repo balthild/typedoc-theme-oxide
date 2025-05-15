@@ -9,34 +9,29 @@ export const CommentMixin = (base: typeof OxideContextBase) =>
         return;
       }
 
-      const skippedTags = this.options.getValue('notRenderedTags');
-      const tags = model.kindOf(ReflectionKind.SomeSignature)
-        ? model.comment.blockTags.filter(
-          (tag) => tag.tag !== '@returns' && !tag.skipRendering && !skippedTags.includes(tag.tag),
-        )
-        : model.comment.blockTags.filter(
-          (tag) => !tag.skipRendering && !skippedTags.includes(tag.tag),
-        );
+      const skipped = this.options.getValue('notRenderedTags');
+      if (model.kindOf(ReflectionKind.SomeSignature)) {
+        skipped.push('@returns');
+      }
 
-      const skipSave = model.comment.blockTags.map((tag) => tag.skipRendering);
-      skipSave.forEach((skip, i) => (model.comment!.blockTags[i].skipRendering = skip));
+      const tags = model.comment.blockTags
+        .filter((tag) => !tag.skipRendering)
+        .filter((tag) => !skipped.includes(tag.tag));
 
       return (
         <>
           {this.hook('comment.beforeTags', this, model.comment, model)}
 
-          <div class="item-table">
+          <div class="item-table comment-tags">
             {tags.map((tag) => (
-              <div class="item-row">
-                <div class="item-left module-item">
-                  <span class="stab portability" title={tag.name}>
-                    <code>{tag.name}</code>
-                  </span>
-                </div>
-                <div class="item-right">
+              <>
+                <dt>
+                  <span class="stab" title={tag.name}>{tag.name ?? tag.tag.replace('@', '')}</span>
+                </dt>
+                <dd>
                   <JSX.Raw html={this.markdown(tag.content)} />
-                </div>
-              </div>
+                </dd>
+              </>
             ))}
           </div>
 

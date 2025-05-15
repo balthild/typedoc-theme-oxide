@@ -16,6 +16,14 @@ body.rustdoc {
   }
 }
 
+.item-table.comment-tags {
+  grid-template-columns: auto 1fr;
+
+  .stab {
+    padding: 1px 5px;
+  }
+}
+
 rustdoc-toolbar #help-button {
   .shortcuts {
     width: 100%;
