@@ -16,7 +16,8 @@
     "build": "rollup -c",
     "clean": "rm -rf dist example/docs",
     "download": "node scripts/download-assets.js",
-    "example:build": "cd example && typedoc --options ./typedoc.json",
+    "example:prepare": "cp -f ./node_modules/monaco-editor/esm/vs/editor/editor.api.d.ts ./example/",
+    "example:build": "yarn example:prepare && cd example && typedoc --options ./typedoc.json",
     "example:deploy": "yarn build && yarn example:build && gh-pages -d ./example/docs",
     "release": "release-it"
   },

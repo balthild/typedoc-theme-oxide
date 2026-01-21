@@ -29,7 +29,7 @@
   },
   "plugins": [
     "https://plugins.dprint.dev/balthild/imporg-0.1.8.wasm",
-    "https://plugins.dprint.dev/typescript-0.93.0.wasm",
-    "https://plugins.dprint.dev/g-plane/malva-v0.10.1.wasm",
+    "https://plugins.dprint.dev/typescript-0.95.13.wasm",
+    "https://plugins.dprint.dev/g-plane/malva-v0.15.2.wasm",
   ],
 }
