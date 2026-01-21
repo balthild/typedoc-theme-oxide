@@ -48,11 +48,13 @@ export function load(app: Application) {
             parent: item.parent?.isProject() ? '' : item.parent?.getFriendlyFullName() ?? '',
             url: itemLink(app.renderer.router!, item, false),
           });
-        } catch {}
+        } catch (e) {
+          app.logger.error(`error building search index for ${item.name}: ${e}`);
+        }
       });
 
     const parts: Record<string, any> = {};
-    await document.export(async (key, data) => {
+    document.export((key, data) => {
       app.logger.info(`Search index part: ${key}`);
       parts[key] = JSON.parse(data);
     });
