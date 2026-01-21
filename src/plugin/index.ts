@@ -48,8 +48,8 @@ export function load(app: Application) {
             parent: item.parent?.isProject() ? '' : item.parent?.getFriendlyFullName() ?? '',
             url: itemLink(app.renderer.router!, item, false),
           });
-        } catch (e) {
-          app.logger.error(`error building search index for ${item.name}: ${e}`);
+        } catch {
+          // the target do not have a url
         }
       });
 
