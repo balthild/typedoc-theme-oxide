@@ -17,10 +17,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   const main = document.getElementById('main-content')!;
   const alt = document.getElementById('alternative-display')!;
 
+  // suppress the errors from stock rustdoc search
   form.addEventListener('submit', (event) => {
     event.preventDefault();
+    event.stopImmediatePropagation();
     event.stopPropagation();
-  });
+  }, true);
+  input.addEventListener('focus', (event) => {
+    event.stopImmediatePropagation();
+    event.stopPropagation();
+  }, true);
 
   let index: Promise<Document<SearchItem>>;
   let controller: AbortController;
@@ -45,12 +51,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       await performSearch(query, signal, await index);
     }, 300),
   );
-
-  // suppress the errors from stock rustdoc search
-  input.addEventListener('focus', (event) => {
-    event.stopImmediatePropagation();
-    event.stopPropagation();
-  }, true);
 });
 
 async function performSearch(query: string, signal: AbortSignal, index: Document<SearchItem>) {

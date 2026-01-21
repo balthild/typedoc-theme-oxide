@@ -55,7 +55,7 @@ export function load(app: Application) {
 
     const parts: Record<string, any> = {};
     document.export((key, data) => {
-      app.logger.info(`Search index part: ${key}`);
+      app.logger.info(`search index part: ${key}`);
       parts[key] = JSON.parse(data);
     });
 
@@ -77,8 +77,8 @@ export function load(app: Application) {
       await fs.cp(src, dest, { recursive: true });
     } catch (e) {
       console.log(e);
-      app.logger.error('Some front-end assets are missing.');
-      app.logger.error('User of the oxide theme should not see this, or I must did something silly.');
+      app.logger.error('some front-end assets are missing.');
+      app.logger.error('users of the theme should not see this, or I must have done something silly.');
     }
   });
 }

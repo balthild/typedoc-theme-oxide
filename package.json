@@ -28,33 +28,33 @@
     "dist"
   ],
   "dependencies": {
-    "cheerio": "^1.0.0",
-    "flexsearch": "^0.8.164",
-    "slug": "^10.0.0"
+    "cheerio": "^1.1.2",
+    "flexsearch": "^0.8.212",
+    "slug": "^11.0.1"
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^12.1.2",
+    "@rollup/plugin-typescript": "^12.3.0",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^22.15.17",
     "@types/slug": "^5.0.9",
     "clean-css": "^5.3.3",
     "gh-pages": "^6.3.0",
     "http-server": "^14.1.1",
-    "lit": "^3.3.0",
-    "lodash-es": "^4.17.21",
-    "monaco-editor": "^0.52.2",
-    "postcss": "^8.5.3",
+    "lit": "^3.3.2",
+    "lodash-es": "^4.17.23",
+    "monaco-editor": "^0.55.1",
+    "postcss": "^8.5.6",
     "postcss-nested": "^7.0.2",
-    "release-it": "^19.0.2",
-    "rollup": "^4.40.2",
+    "release-it": "^19.2.4",
+    "rollup": "^4.55.3",
     "rollup-plugin-postcss": "^4.0.2",
-    "terser": "^5.39.0",
+    "terser": "^5.46.0",
     "tslib": "^2.8.1",
-    "typedoc": "^0.28.4",
-    "typescript": "^5.8.3",
-    "undici": "^7.9.0"
+    "typedoc": "^0.28.16",
+    "typescript": "^5.9.3",
+    "undici": "^7.19.0"
   },
   "peerDependencies": {
     "typedoc": "^0.28.4"
