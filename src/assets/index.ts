@@ -45,6 +45,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       await performSearch(query, signal, await index);
     }, 300),
   );
+
+  // suppress the errors from stock rustdoc search
+  input.addEventListener('focus', (event) => {
+    event.stopImmediatePropagation();
+    event.stopPropagation();
+  }, true);
 });
 
 async function performSearch(query: string, signal: AbortSignal, index: Document<SearchItem>) {
