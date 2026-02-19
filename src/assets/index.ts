@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }, true);
 
   let index: Promise<Document<SearchItem>>;
-  let controller: AbortController;
+  let abort: AbortController;
 
   input.addEventListener(
     'input',
@@ -44,11 +44,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       hide.classList.add('hidden');
       show.classList.remove('hidden');
 
-      controller?.abort();
-      controller = new AbortController();
-      const signal = controller.signal;
+      abort?.abort();
+      abort = new AbortController();
 
-      await performSearch(query, signal, await index);
+      await performSearch(query, abort.signal, await index);
     }, 300),
   );
 });
@@ -76,7 +75,7 @@ async function performSearch(query: string, signal: AbortSignal, index: Document
 class OxideSearchResults extends LitElement {
   static base = document.documentElement.dataset.base!;
 
-  static classes = {
+  static classes: Record<number, string> = {
     [ReflectionKind.ClassMember]: 'fn',
     [ReflectionKind.Function]: 'fn',
     [ReflectionKind.Property]: 'fn',
@@ -90,7 +89,7 @@ class OxideSearchResults extends LitElement {
     [ReflectionKind.Constructor]: 'primitive',
     [ReflectionKind.EnumMember]: 'macro',
     [ReflectionKind.Variable]: 'macro',
-  } as Record<number, string>;
+  };
 
   @property({ attribute: false })
   accessor loading: boolean = true;

@@ -20,7 +20,7 @@ export class OxideTheme extends DefaultTheme {
 
     const document = createSearchDocument();
 
-    this.application.renderer.router!.getLinkTargets()
+    this.router.getLinkTargets()
       .filter((x) => x instanceof Reflection)
       .filter((x) => x.isDeclaration() || x.isDocument())
       .filter((x) => x.name && !x.flags.isExternal)
@@ -32,7 +32,7 @@ export class OxideTheme extends DefaultTheme {
             comment: renderTextComment(item),
             kind: item.kind,
             parent: item.parent?.isProject() ? '' : item.parent?.getFriendlyFullName() ?? '',
-            url: itemLink(this.router!, item, false),
+            url: itemLink(this.router, item, false),
           });
         } catch {
           // the target do not have a url

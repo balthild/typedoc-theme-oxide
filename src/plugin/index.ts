@@ -1,4 +1,4 @@
-import { Application, RendererEvent } from 'typedoc';
+import { Application } from 'typedoc';
 
 import { OxideTheme } from './theme';
 
