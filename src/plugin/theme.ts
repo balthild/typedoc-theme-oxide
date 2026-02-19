@@ -16,7 +16,7 @@ export class OxideTheme extends DefaultTheme {
   }
 
   async preRender(event: RendererEvent) {
-    super.preRender(event);
+    await super.preRender(event);
 
     const document = createSearchDocument();
 
@@ -53,7 +53,7 @@ export class OxideTheme extends DefaultTheme {
   }
 
   async postRender(event: RendererEvent) {
-    super.postRender(event);
+    await super.postRender(event);
 
     const src = path.join(import.meta.dirname, '..', 'assets');
     const dest = path.join(event.outputDirectory, 'assets', 'oxide');
