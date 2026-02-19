@@ -7,6 +7,7 @@ import typescript from '@rollup/plugin-typescript';
 import { createServer } from 'http-server';
 import nested from 'postcss-nested';
 import { defineConfig } from 'rollup';
+import MinifyHtml from 'rollup-plugin-minify-html-literals';
 import postcss from 'rollup-plugin-postcss';
 
 export default defineConfig((args) => [
@@ -39,6 +40,7 @@ export default defineConfig((args) => [
       resolve({ extensions: ['.ts', '.tsx', '.json', '.node'] }),
       postcss({ extract: true, minimize: !args.watch, sourceMap: true, plugins: [nested()] }),
       !args.watch && terser(),
+      !args.watch && MinifyHtml.default(),
       args.watch && typedocExampleCopyAssets(),
     ],
     input: 'src/assets/index.ts',

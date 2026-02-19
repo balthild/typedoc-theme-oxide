@@ -49,6 +49,7 @@
     "postcss-nested": "^7.0.2",
     "release-it": "^19.2.4",
     "rollup": "^4.55.3",
+    "rollup-plugin-minify-html-literals": "^1.2.6",
     "rollup-plugin-postcss": "^4.0.2",
     "terser": "^5.46.0",
     "tslib": "^2.8.1",
