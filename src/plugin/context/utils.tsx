@@ -2,6 +2,7 @@ import * as cheerio from 'cheerio';
 import slug from 'slug';
 import {
   BaseRouter,
+  ContainerReflection,
   DeclarationReflection,
   DefaultThemeRenderContext,
   DocumentReflection,
@@ -24,6 +25,19 @@ export function isNestedTable(section: ReflectionSection) {
 export function isNestedItem(item: ReflectionWithLink) {
   return item.kindOf([
     ReflectionKind.ExportContainer,
+    ReflectionKind.Interface,
+    ReflectionKind.Class,
+    ReflectionKind.Enum,
+  ]);
+}
+
+/**
+ * Check if the item is something that could have methods (associative functions).
+ *
+ * Functions within these are displayed as methods (similar to struct/enum in rustdoc).
+ */
+export function isMethodContainer(item: ContainerReflection) {
+  return item.kindOf([
     ReflectionKind.Interface,
     ReflectionKind.Class,
     ReflectionKind.Enum,

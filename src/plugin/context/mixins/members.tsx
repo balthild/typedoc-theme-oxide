@@ -12,6 +12,7 @@ import {
 import { OxideContextBase } from '../base';
 import {
   breakable,
+  isMethodContainer,
   isNestedItem,
   isNestedTable,
   join,
@@ -37,11 +38,20 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
         ...groups.flatMap((x) => x.categories ?? [x] as ReflectionSection[]),
       ];
 
+      // Only display non-nested items (like methods) using sections
+      // if the model is a container for it.
+      // This allows functions and variables to be displayed with table
+      // in modules and with sections in classes
+      // similar to how rustdoc handles things
+      const shouldUseSection = isMethodContainer(model);
+
       return (
         <>
           {this.#preview(model)}
           {modules.map((x) => this.#table(x, true))}
-          {sections.map((x) => this.#section(x))}
+          {shouldUseSection
+            ? sections.map((x) => this.#section(x))
+            : sections.map((x) => this.#table(x, true))}
           {tables.map((x) => this.#table(x, true))}
         </>
       );
@@ -50,6 +60,21 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
     #preview(decl: ContainerReflection) {
       if (!decl.isDeclaration()) {
         return;
+      }
+
+      // Functions/overloads: render each signature as a code block with its docs
+      if (decl.signatures?.length) {
+        return decl.signatures.map((sig) => (
+          <>
+            <pre class="item-decl">
+              <code>{transformHighlights(this.memberSignatureTitle(sig))}</code>
+            </pre>
+            <div class="docblock">
+              {this.commentSummary(sig)}
+              {this.commentTags(sig)}
+            </div>
+          </>
+        ));
       }
 
       // Workaround for `this.reflectionPreview`
@@ -86,22 +111,30 @@ export const MembersMixin = (base: typeof OxideContextBase) =>
           </h2>
 
           <dl class="item-table">
-            {section.children.map((item) => (
-              <>
-                <dt>
-                  <a
-                    class={itemLinkClass(item)}
-                    href={this.itemLink(item, forceNested)}
-                    title={item.name}>
-                    {item.name}
-                  </a>
-                </dt>
+            {section.children.map((item) => {
+              let shortSummary = item.comment?.getShortSummary(true);
+              // fallback for functions
+              if (!shortSummary && item.isDeclaration()) {
+                shortSummary = item.signatures?.[0]?.comment?.getShortSummary(true);
+              }
 
-                <dd>
-                  <JSX.Raw html={this.markdown(item.comment?.getShortSummary(true))} />
-                </dd>
-              </>
-            ))}
+              return (
+                <>
+                  <dt>
+                    <a
+                      class={itemLinkClass(item)}
+                      href={this.itemLink(item, forceNested)}
+                      title={item.name}>
+                      {item.name}
+                    </a>
+                  </dt>
+
+                  <dd>
+                    <JSX.Raw html={this.markdown(shortSummary)} />
+                  </dd>
+                </>
+              );
+            })}
           </dl>
         </>
       );
